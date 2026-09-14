@@ -1,0 +1,10 @@
+{
+  "name": "Henka",
+  "description": "An AI-powered holistic health app covering mental, physical, and nutritional well-being with real-time posture tracking.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

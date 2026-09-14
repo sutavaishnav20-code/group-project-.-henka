@@ -1,0 +1,19 @@
+{
+  "name": "henka",
+  "version": "1.0.0",
+  "description": "Henka — Be The Change You Want",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "echo 'Build complete'",
+    "start": "node server.js",
+    "lint": "node --check server.js"
+  },
+  "dependencies": {
+    "@google/genai": "latest",
+    "@google/generative-ai": "^0.11.0",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "ws": "^8.21.3"
+  }
+}

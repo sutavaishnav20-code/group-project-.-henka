@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Henka — Be The Change You Want</title>
+
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+    </script>
+    <script>
+        const SUPABASE_URL = 'https://fkahswirogjxrdtzulrv.supabase.co';
+        const SUPABASE_ANON_KEY =
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrYWhzd2lyb2dqeHJkdHp1bHJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MzU3OTYsImV4cCI6MjEwMjExMTc5Nn0.BdBC2e20UQl7XRxkCsWrrELik15ukBBL9xye-rdjaUs';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            window.henkaAuthClient = supabase;
+        console.log('✅ Supabase initialized:', supabase);
+    </script>
+
+    <!-- MediaPipe for AI Tracking -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;800&family=Work+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ====== ROOT VARIABLES ====== */
+        :root {
+            --paper: #EAE6D8;
+            --paper-2: #F4F1E7;
+            --paper-3: #DEDACB;
+            --ink: #211F1A;
+            --ink-soft: #5B594E;
+            --ink-faint: #8C8A7B;
+            --indigo: #1F3F58;
+            --indigo-deep: #0F2434;
+            --indigo-soft: #3E6B87;
+            --moss: #57644A;
+            --kaki: #A15A2E;
+            --gold: #C67A3A;
+            --gold-light: #E8C99B;
+            --gold-soft: #D4A373;
+            --line: rgba(33, 31, 26, 0.14);
+            --line-strong: rgba(33, 31, 26, 0.26);
+            --shadow-sm: 0 2px 8px rgba(15, 36, 52, 0.08);
+            --shadow-md: 0 4px 20px rgba(15, 36, 52, 0.12);
+            --radius: 8px;
+            --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ====== RESET & BASE ====== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            margin: 0;
+            background: var(--paper);
+            color: var(--ink);
+            font-family: 'Work Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            background-image:
+                radial-gradient(circle at 15% 8%, rgba(31, 63, 88, 0.05), transparent 40%),
+                radial-gradient(circle at 85% 92%, rgba(161, 90, 46, 0.05), transparent 40%);
+        }
+            body.dark-theme {
+                --paper: #17232b;
+                --paper-2: #20313a;
+                --paper-3: #2b3d45;
+                --ink: #edf1eb;
+                --ink-soft: #c3cdc7;
+                --ink-faint: #94a39d;
+                --indigo: #8eb4c7;
+                --indigo-deep: #d6e5e7;
+                --indigo-soft: #aecbd4;
+                --line: rgba(237, 241, 235, 0.16);
+                --line-strong: rgba(237, 241, 235, 0.3);
+                background-image:
+                radial-gradient(circle at 15% 8%, rgba(142, 180, 199, 0.12), transparent 40%),
+                radial-gradient(circle at 85% 92%, rgba(212, 163, 115, 0.1), transparent 40%);
+            }
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.001ms !important;
+                transition-duration: 0.001ms !important;
+            }
+        }
+        .wrap {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ====== HEADER ====== */
+        header.top {
+            padding: 36px 0 0;
+            position: relative;
+        }
+        .menu-trigger {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 40px;
+            height: 36px;
+            padding: 8px 9px;
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 4px;
+            background: var(--paper-2);
+            border: 1px solid var(--line-strong);
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            z-index: 2;
+        }
+        .menu-trigger span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background: var(--ink);
+            border-radius: 2px;
+            transition: transform var(--transition), opacity var(--transition);
+        }
+        .menu-trigger[aria-expanded="true"] span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        .menu-trigger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+        .menu-trigger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+        .settings-drawer {
+            position: fixed;
+            top: 16px;
+            left: max(16px, calc(50% - 480px));
+            width: min(300px, calc(100vw - 32px));
+            padding: 16px;
+            background: var(--paper-2);
+            border: 1px solid var(--line-strong);
+            border-radius: var(--radius);
+            box-shadow: 0 14px 40px rgba(15, 36, 52, 0.22);
+            z-index: 10001;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-8px);
+            transition: opacity var(--transition), transform var(--transition);
+        }
+        .settings-drawer.open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+        .settings-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-bottom: 12px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid var(--line);
+        }
+        .settings-heading strong {
+            font-family: 'Shippori Mincho', serif;
+            font-size: 20px;
+            color: var(--indigo-deep);
+        }
+        .settings-close {
+            border: 0;
+            background: transparent;
+            color: var(--ink-soft);
+            font-size: 22px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .settings-action,
+        .settings-select {
+            width: 100%;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 9px 10px;
+            margin-top: 6px;
+            color: var(--ink);
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 5px;
+            font: inherit;
+            font-size: 13px;
+            text-align: left;
+            cursor: pointer;
+        }
+        .settings-action:hover,
+        .settings-select:hover { background: rgba(31, 63, 88, 0.08); border-color: var(--line); }
+        .settings-select select {
+            max-width: 125px;
+            padding: 4px 6px;
+            color: var(--ink);
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            font: inherit;
+            font-size: 12px;
+        }
+        .settings-status { font-size: 11px; color: var(--ink-faint); }
+        .settings-version {
+            display: block;
+            padding: 12px 10px 2px;
+            color: var(--ink-faint);
+            font-size: 11px;
+            border-top: 1px solid var(--line);
+            margin-top: 10px;
+        }
+        .brand-row {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .seal {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 1.5px solid var(--kaki);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Shippori Mincho', serif;
+            color: var(--kaki);
+            font-size: 22px;
+            flex-shrink: 0;
+            transform: rotate(-4deg);
+            background: var(--paper-2);
+            box-shadow: var(--shadow-sm);
+        }
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+        h1.logo {
+            font-family: 'Shippori Mincho', serif;
+            font-weight: 800;
+            font-size: clamp(36px, 6.5vw, 54px);
+            margin: 0;
+            letter-spacing: 0.01em;
+            line-height: 1;
+            background: linear-gradient(100deg, var(--indigo-deep) 15%, var(--indigo) 55%, var(--indigo-soft) 85%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .tagline {
+            font-size: 11px;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: var(--ink-soft);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        .header-rule {
+            height: 1px;
+            background: var(--line-strong);
+            margin: 22px 0 0;
+            position: relative;
+        }
+        .header-rule::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 4px;
+            width: 100%;
+            height: 1px;
+            background: var(--line);
+        }
+
+        /* ====== QUOTE ====== */
+        .quote-box {
+            padding: 22px 0 18px;
+            text-align: center;
+            background: var(--paper-2);
+            margin: 14px 0 6px;
+            border-radius: var(--radius);
+            border: 1px solid var(--line);
+        }
+        .quote-text {
+            font-family: 'Shippori Mincho', serif;
+            font-style: italic;
+            font-weight: 500;
+            font-size: clamp(16px, 2.2vw, 21px);
+            color: var(--ink);
+            max-width: 620px;
+            margin: 0 auto;
+            line-height: 1.55;
+            padding: 0 16px;
+        }
+        .quote-mark {
+            color: var(--kaki);
+            font-family: 'Shippori Mincho', serif;
+            font-style: normal;
+            font-size: 1.3em;
+            opacity: 0.7;
+        }
+
+        /* ====== NAVIGATION – REDESIGNED ====== */
+        .nav-wrapper {
+            display: flex;
+            align-items: stretch;
+            gap: 0;
+            margin: 16px 0 0;
+            border-top: 1px solid var(--line-strong);
+            border-bottom: 1px solid var(--line-strong);
+            background: var(--paper-2);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            flex-wrap: wrap;
+        }
+
+        /* ---- HOME BUTTON (standalone, golden) ---- */
+        .nav-home-btn {
+            flex: 0 0 auto;
+            min-width: 110px;
+            background: var(--gold-soft);
+            border: none;
+            border-right: 2px solid var(--gold);
+            padding: 14px 22px;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background var(--transition), transform var(--transition), box-shadow var(--transition);
+            position: relative;
+            box-shadow: 0 2px 8px rgba(198, 122, 58, 0.25);
+        }
+        .nav-home-btn .home-icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+        .nav-home-btn:hover {
+            background: var(--gold);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(198, 122, 58, 0.35);
+        }
+        .nav-home-btn.active {
+            background: var(--gold);
+            box-shadow: 0 4px 16px rgba(198, 122, 58, 0.45);
+        }
+        .nav-home-btn.active .home-icon {
+            transform: scale(1.1);
+        }
+
+        /* ---- Divider ---- */
+        .nav-divider {
+            width: 1px;
+            background: var(--line-strong);
+            flex-shrink: 0;
+            margin: 8px 0;
+        }
+
+        /* ---- Other 4 buttons ---- */
+        .nav-group {
+            display: flex;
+            flex: 1;
+            flex-wrap: wrap;
+            align-items: stretch;
+        }
+        .nav-group button {
+            flex: 1;
+            min-width: 100px;
+            background: transparent;
+            border: none;
+            border-right: 1px solid var(--line);
+            padding: 14px 12px;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 12.5px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--ink-soft);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            transition: background var(--transition), color var(--transition), border-color var(--transition);
+            position: relative;
+        }
+        .nav-group button:last-child {
+            border-right: none;
+        }
+        .nav-group button .num {
+            font-family: 'Shippori Mincho', serif;
+            font-size: 10px;
+            color: var(--ink-faint);
+            transition: color var(--transition);
+        }
+        .nav-group button .label {
+            font-weight: 500;
+            font-size: 12px;
+        }
+        .nav-group button:hover {
+            background: rgba(31, 63, 88, 0.06);
+            color: var(--ink);
+        }
+        .nav-ai-btn {
+            flex: 0 0 auto;
+            align-self: center;
+            margin: 6px 8px;
+            padding: 8px 12px;
+            border: 1px solid var(--line-strong);
+            border-radius: 5px;
+            background: transparent;
+            color: var(--ink-soft);
+            font: inherit;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background var(--transition), color var(--transition), border-color var(--transition);
+        }
+        .nav-ai-btn:hover {
+            background: var(--indigo);
+            border-color: var(--indigo);
+            color: var(--paper-2);
+        }
+
+        /* Active state for nav-group buttons */
+        .nav-group button.active {
+            background: var(--indigo);
+            color: var(--paper-2);
+            border-right-color: var(--indigo);
+        }
+        .nav-group button.active .num {
+            color: rgba(244, 241, 231, 0.6);
+        }
+        .nav-group button.active .label {
+            color: #fff;
+        }
+
+        /* ---- Mobile: stack home above ---- */
+        @media (max-width: 700px) {
+            .nav-wrapper {
+                flex-direction: column;
+                border-radius: var(--radius);
+                overflow: hidden;
+            }
+            .nav-home-btn {
+                border-right: none;
+                border-bottom: 2px solid var(--gold);
+                justify-content: center;
+                border-radius: 0;
+                width: 100%;
+            }
+            .nav-divider {
+                display: none;
+            }
+            .nav-group {
+                flex-wrap: wrap;
+            }
+            .nav-group button {
+                flex: 1 0 45%;
+                border-bottom: 1px solid var(--line);
+                padding: 12px 8px;
+            }
+            .nav-group button:nth-child(2) {
+                border-right: 1px solid var(--line);
+            }
+            .nav-group button:nth-child(4) {
+                border-right: none;
+            }
+            .nav-group button:nth-child(3) {
+                border-bottom: 1px solid var(--line);
+            }
+            .nav-group button:nth-child(4) {
+                border-bottom: 1px solid var(--line);
+            }
+            .nav-group button:last-child {
+                border-bottom: none;
+            }
+        }
+
+        @media (max-width: 440px) {
+            .nav-group button {
+                flex: 1 0 100%;
+                border-right: none !important;
+                border-bottom: 1px solid var(--line);
+            }
+            .nav-group button:last-child {
+                border-bottom: none;
+            }
+            .nav-home-btn {
+                font-size: 13px;
+                padding: 12px 16px;
+            }
+        }
+
+        /* ====== MAIN ====== */
+        main {
+            padding: 30px 0 70px;
+        }
+
+        /* ====== VIEWS ====== */
+        .view {
+            display: none;
+            animation: fade 0.4s ease;
+        }
+        .view.active {
+            display: block;
+        }
+        @keyframes fade {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ====== TYPOGRAPHY ====== */
+        .eyebrow {
+            font-size: 11px;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--kaki);
+            font-weight: 600;
+            margin: 0 0 6px;
+        }
+        h2.section-title {
+            font-family: 'Shippori Mincho', serif;
+            font-weight: 600;
+            font-size: clamp(26px, 4vw, 34px);
+            margin: 0 0 4px;
+            color: var(--indigo-deep);
+            line-height: 1.2;
+        }
+        .section-sub {
+            color: var(--ink-soft);
+            font-size: 15px;
+            max-width: 560px;
+            line-height: 1.6;
+            margin: 0 0 26px;
+        }
+
+        /* ====== HOME PAGE ====== */
+        .home-hero {
+            margin-bottom: 28px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            background: var(--indigo-deep);
+            color: var(--paper-2);
+            padding: 32px 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            background-image: linear-gradient(135deg, var(--indigo-deep) 50%, var(--indigo));
+            position: relative;
+            min-height: 140px;
+        }
+        .home-hero::after {
+            content: '🌿';
+            position: absolute;
+            right: 24px;
+            bottom: 16px;
+            font-size: 64px;
+            opacity: 0.2;
+            line-height: 1;
+        }
+        .home-hero h2 {
+            font-family: 'Shippori Mincho', serif;
+            font-size: clamp(22px, 3.5vw, 32px);
+            font-weight: 600;
+            margin: 0;
+            color: #fff;
+        }
+        .home-hero p {
+            margin: 0;
+            opacity: 0.85;
+            font-size: 15px;
+            max-width: 480px;
+            line-height: 1.6;
+        }
+
+        /* ---- Home Cards ---- */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 10px;
+        }
+        @media (max-width: 640px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .home-card {
+            background: var(--paper-2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 20px 22px 22px;
+            cursor: pointer;
+            transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+            text-align: left;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .home-card:hover {
+            border-color: var(--indigo);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        .home-card .card-icon {
+            font-size: 28px;
+            margin-bottom: 6px;
+            display: block;
+        }
+        .home-card .num {
+            font-family: 'Shippori Mincho', serif;
+            color: var(--kaki);
+            font-size: 12px;
+            letter-spacing: 0.05em;
+        }
+        .home-card h3 {
+            font-family: 'Shippori Mincho', serif;
+            font-size: 19px;
+            margin: 4px 0 6px;
+            color: var(--ink);
+        }
+        .home-card p {
+            font-size: 13.5px;
+            color: var(--ink-soft);
+            margin: 0;
+            line-height: 1.5;
+        }
+        .home-card .card-svg {
+            width: 100%;
+            height: 110px;
+            margin-top: 10px;
+            border-radius: 4px;
+            background: var(--paper);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            transition: border-color var(--transition), background var(--transition);
+        }
+        .home-card:hover .card-svg {
+            border-color: var(--indigo-soft);
+            background: var(--paper-2);
+        }
+        .home-card .card-svg svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* ====== MENTAL HEALTH 4 PILLARS & SUB-OPTIONS ====== */
+        .pillar-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+            margin-top: 10px;
+        }
+        @media (max-width: 720px) {
+            .pillar-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .pillar-card {
+            background: var(--paper-2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: left;
+            transition: box-shadow var(--transition), border-color var(--transition);
+        }
+        .pillar-card:hover {
+            box-shadow: var(--shadow-sm);
+            border-color: var(--indigo-soft);
+        }
+        .pillar-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .pillar-icon {
+            font-size: 30px;
+        }
+        .pillar-card h3 {
+            font-family: 'Shippori Mincho', serif;
+            font-size: 21px;
+            color: var(--ink);
+            margin: 0;
+        }
+        .pillar-card p {
+            color: var(--ink-soft);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            min-height: 42px;
+        }
+
+        /* The buttons inside Mental Health pillars */
+        .option-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .option-btn {
+            background: var(--paper);
+            border: 1px solid var(--line);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--ink);
+            text-align: left;
+            cursor: pointer;
+            transition: all var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .option-btn:hover {
+            border-color: var(--indigo);
+            background: rgba(31, 63, 88, 0.04);
+            transform: translateX(3px);
+            color: var(--indigo-deep);
+        }
+        .option-btn::before {
+            content: '›';
+            font-size: 16px;
+            color: var(--indigo-soft);
+            opacity: 0.6;
+            margin-top: -1px;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .option-btn:hover::before {
+            opacity: 1;
+            transform: translateX(2px);
+        }
+
+        /* ====== FORM CONTROLS ====== */
+        .input-group {
+            margin-bottom: 16px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--ink);
+        }
+        .input-group input,
+        .input-group textarea,
+        .input-group select {
+            width: 100%;
+            background: var(--paper-2);
+            border: 1px solid var(--line-strong);
+            padding: 12px 14px;
+            border-radius: 6px;
+            font: inherit;
+            color: var(--ink);
+            font-size: 15px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .input-group input:focus,
+        .input-group textarea:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: var(--indigo);
+            background: var(--paper);
+            box-shadow: 0 0 0 3px rgba(31, 63, 88, 0.1);
+        }
+        .input-group textarea {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        .primary-btn {
+            background: var(--indigo-deep);
+            color: var(--paper-2);
+            border: none;
+            padding: 14px 24px;
+            font: inherit;
+            font-weight: 600;
+            font-size: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background var(--transition), transform var(--transition);
+            width: 100%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .primary-btn:hover {
+            background: var(--indigo);
+            transform: translateY(-1px);
+        }
+
+        /* ====== INQUIRY FORM (MENTORS) ====== */
+        .inquiry-panel {
+            background: var(--paper-2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 30px;
+            margin-top: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+        .inquiry-panel h3 {
+            font-family: 'Shippori Mincho', serif;
+            font-size: 24px;
+            margin-bottom: 6px;
+            color: var(--indigo-deep);
+        }
+        .inquiry-panel p.desc {
+            color: var(--ink-soft);
+            font-size: 14.5px;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        /* ====== AI COACH (NUTRITION & PLANNER) ====== */
+        .coach-panel {
+            background: var(--paper-2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .coach-panel h3 {
+            font-family: 'Shippori Mincho', serif;
+            font-size: 22px;
+            margin-bottom: 12px;
+            color: var(--indigo-deep);
+        }
+        .coach-panel p {
+            color: var(--ink-soft);
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--line-strong);
+            border-radius: 8px;
+            padding: 32px 20px;
+            text-align: center;
+            background: rgba(31, 63, 88, 0.02);
+            cursor: pointer;
+            transition: background var(--transition), border-color var(--transition);
+            margin-bottom: 16px;
+        }
+        .upload-area:hover {
+            background: rgba(31, 63, 88, 0.06);
+            border-color: var(--indigo-soft);
+        }
+        .upload-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .upload-text {
+            font-size: 15px;
+            color: var(--ink);
+            font-weight: 500;
+        }
+        .upload-sub {
+            font-size: 12px;
+            color: var(--ink-faint);
+            margin-top: 4px;
+        }
+        #fileInput {
+            display: none;
+        }
+        .preview-img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 6px;
+            display: none;
+            margin: 0 auto 16px;
+            box-shadow: var(--shadow-sm);
+        }
+        #analysisResult {
+            margin-top: 20px;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 20px;
+            display: none;
+        }
+        #analysisResult pre {
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            color: var(--ink-soft);
+        }
+
+        /* ====== TIMETABLE (DASHBOARD) ====== */
+        .timetable-section {
+            background: var(--paper-2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .timetable-section h3 {
+            font-family: 'Shippori Mincho', serif;
+            font-size: 22px;
+            margin-bottom: 16px;
+            color: var(--indigo-deep);
+        }
+        .time-slot {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--line);
+            transition: background 0.2s;
+        }
+        .time-slot:hover {
+            background: rgba(31, 63, 88, 0.03);
+        }
+        .time-slot:last-child {
+            border-bottom: none;
+        }
+        .ts-time {
+            font-weight: 600;
+            color: var(--indigo);
+            font-size: 14px;
+            width: 80px;
+            flex-shrink: 0;
+            padding-top: 2px;
+        }
+        .ts-content {
+            flex: 1;
+        }
+        .ts-title {
+            font-size: 15.5px;
+            color: var(--ink);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .ts-meta {
+            font-size: 12.5px;
+            color: var(--ink-soft);
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .ts-tag {
+            background: var(--paper);
+            border: 1px solid var(--line-strong);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Loading Overlay */
+        .loading {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(234, 230, 216, 0.85); /* Matches --paper with opacity */
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            backdrop-filter: blur(4px);
+        }
+        body.dark-theme .loading {
+            background: rgba(23, 35, 43, 0.85);
+        }
+        .loading.active {
+            display: flex;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--line-strong);
+            border-top-color: var(--indigo);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .loading-text {
+            font-family: 'Shippori Mincho', serif;
+            font-size: 18px;
+            color: var(--indigo-deep);
+            font-weight: 500;
+        }
+
+        /* Quick Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--indigo-deep);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            box-shadow: var(--shadow-md);
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10002;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Mentors List styling */
+        .mentor-card {
+            background: var(--paper-2);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        .mentor-card h4 {
+            font-family: 'Shippori Mincho', serif;
+            font-size: 20px;
+            color: var(--ink);
+            margin: 0 0 4px;
+        }
+        .mentor-card .role {
+            font-size: 13px;
+            color: var(--kaki);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 12px;
+        }
+        .mentor-card p {
+            font-size: 14.5px;
+            color: var(--ink-soft);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        .mentor-contact {
+            background: var(--paper);
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            color: var(--ink);
+            border: 1px solid var(--line-strong);
+        }
+        .mentor-contact a {
+            color: var(--indigo-soft);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .mentor-contact a:hover {
+            text-decoration: underline;
+        }
+
+        /* ---- Physical Tabs ---- */
+        .physical-tabs {
+            display: flex; gap: 8px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 4px; border-bottom: 1px solid var(--line);
+        }
+        .tab-btn {
+            background: transparent; border: none; padding: 12px 16px; font-size: 14px; font-weight: 500; color: var(--ink-soft); cursor: pointer; transition: all var(--transition); white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px;
+        }
+        .tab-btn:hover {
+            color: var(--ink);
+        }
+        .tab-btn.active {
+            color: var(--indigo); border-bottom: 2px solid var(--indigo);
+        }
+        .tab-content { display: none; animation: fade 0.3s ease; }
+        .tab-content.active { display: block; }
+
+        /* ---- Image Selector ---- */
+        .physique-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px;
+        }
+        .physique-card {
+            border: 2px solid transparent; border-radius: 8px; overflow: hidden; cursor: pointer; transition: all 0.2s ease; position: relative;
+        }
+        .physique-card img {
+            width: 100%; height: 140px; object-fit: cover; display: block;
+        }
+        .physique-card .label {
+            position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.7); color: #fff; padding: 6px; font-size: 11px; text-align: center; font-weight: 500;
+        }
+        .physique-card.selected {
+            border-color: var(--indigo); box-shadow: 0 4px 12px rgba(31, 63, 88, 0.2);
+        }
+        .physique-card.selected::after {
+            content: '✓'; position: absolute; top: 8px; right: 8px; background: var(--indigo); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;
+        }
+    </style>
+
+</head>
+<body>
+
+    <div class="loading" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loadingText">Processing...</div>
+    </div>
+
+    <div class="toast" id="toastMsg">Action completed</div>
+
+    <!-- SETTINGS DRAWER -->
+    <div class="settings-drawer" id="settingsDrawer">
+        <div class="settings-heading">
+            <strong>System Menu</strong>
+            <button class="settings-close" id="closeSettingsBtn" aria-label="Close menu">&times;</button>
+        </div>
+        <div class="settings-select">
+            Theme
+            <select id="themeSelect">
+                <option value="light">Light (Paper)</option>
+                <option value="dark">Dark (Ink)</option>
+            </select>
+        </div>
+        <div class="settings-select">
+            Language
+            <select id="langSelect">
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+                <option value="mr">Marathi</option>
+            </select>
+        </div>
+        <span class="settings-version">Henka v1.2.0 &bull; Offline Ready</span>
+    </div>
+
+    <div class="wrap">
+        <header class="top">
+            <button class="menu-trigger" id="menuBtn" aria-label="Menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+            <div class="brand-row">
+                <div class="seal">H</div>
+                <div class="brand-text">
+                    <h1 class="logo">Henka</h1>
+                    <div class="tagline">Be The Change You Want</div>
+                </div>
+            </div>
+            
+            <div class="nav-wrapper">
+                <button class="nav-home-btn active" data-target="view-home">
+                    <span class="home-icon">⌂</span> Home
+                </button>
+                <div class="nav-divider"></div>
+                <div class="nav-group">
+                    <button data-target="view-mental">
+                        <span class="num">01</span>
+                        <span class="label">Mental Health</span>
+                    </button>
+                    <button data-target="view-physical">
+                        <span class="num">02</span>
+                        <span class="label">Physical Fitness</span>
+                    </button>
+                    <button data-target="view-diet">
+                        <span class="num">03</span>
+                        <span class="label">Nutrition</span>
+                    </button>
+                    <button data-target="view-consult">
+                        <span class="num">04</span>
+                        <span class="label">Mentorship</span>
+                    </button>
+                </div>
+                <button class="nav-ai-btn" id="openAiChatBtn">✨ AI Coach</button>
+            </div>
+            
+            <div class="header-rule"></div>
+        </header>
+
+        <main>
+            <!-- 0. HOME VIEW -->
+            <div id="view-home" class="view active">
+                <div class="home-hero">
+                    <h2>Welcome to Your Journey.</h2>
+                    <p>A holistic space for your mind, body, and spirit. Choose a path below to begin tracking and improving your well-being.</p>
+                </div>
+
+                <div class="card-grid">
+                    <div class="home-card" onclick="switchView('view-mental')">
+                        <span class="card-icon">🧘‍♂️</span>
+                        <span class="num">01.</span>
+                        <h3>Mental Health</h3>
+                        <p>Meditation, journaling, sleep tracking, and anxiety management.</p>
+                    </div>
+                    <div class="home-card" onclick="switchView('view-physical')">
+                        <span class="card-icon">💪</span>
+                        <span class="num">02.</span>
+                        <h3>Physical Fitness</h3>
+                        <p>Workouts, posture correction, BMI tracking, and mobility flows.</p>
+                    </div>
+                    <div class="home-card" onclick="switchView('view-diet')">
+                        <span class="card-icon">🥗</span>
+                        <span class="num">03.</span>
+                        <h3>Nutrition</h3>
+                        <p>AI food analysis, macro tracking, and personalized diet plans.</p>
+                    </div>
+                    <div class="home-card" onclick="switchView('view-consult')">
+                        <span class="card-icon">🤝</span>
+                        <span class="num">04.</span>
+                        <h3>Mentorship</h3>
+                        <p>Book 1-on-1 consultations with wellness and fitness experts.</p>
+                    </div>
+                </div>
+
+                <!-- Timetable Preview on Home -->
+                <div class="timetable-section" style="margin-top: 32px;">
+                    <h3>Today's Schedule</h3>
+                    <div id="homeTimetableList">
+                        <!-- Loaded via JS -->
+                        <div class="time-slot" style="justify-content: center; color: var(--ink-faint);">Loading schedule...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 1. MENTAL HEALTH VIEW -->
+            <div id="view-mental" class="view">
+                <div class="eyebrow">Pillar 01</div>
+                <h2 class="section-title">Mental Health & Clarity</h2>
+                <p class="section-sub">Tools to ground your mind, process emotions, and build mental resilience.</p>
+
+                <div class="pillar-grid">
+                    <div class="pillar-card">
+                        <div class="pillar-head">
+                            <span class="pillar-icon">🌿</span>
+                            <h3>Mindfulness</h3>
+                        </div>
+                        <p>Guided meditations and breathing exercises.</p>
+                        <div class="option-list">
+                            <button class="option-btn">Box Breathing (4-4-4-4)</button>
+                            <button class="option-btn">Vagus Nerve Reset</button>
+                        </div>
+                    </div>
+                    <div class="pillar-card">
+                        <div class="pillar-head">
+                            <span class="pillar-icon">✍️</span>
+                            <h3>Journaling</h3>
+                        </div>
+                        <p>Expressive writing and cognitive reframing.</p>
+                        <div class="option-list">
+                            <button class="option-btn">Gratitude Log</button>
+                            <button class="option-btn">Anxiety Brain Dump</button>
+                        </div>
+                    </div>
+                    <div class="pillar-card">
+                        <div class="pillar-head">
+                            <span class="pillar-icon">🌙</span>
+                            <h3>Sleep</h3>
+                        </div>
+                        <p>Optimize your circadian rhythm and sleep hygiene.</p>
+                        <div class="option-list">
+                            <button class="option-btn">Sleep Soundscapes</button>
+                            <button class="option-btn">Wind-down Routine</button>
+                        </div>
+                    </div>
+                    <div class="pillar-card">
+                        <div class="pillar-head">
+                            <span class="pillar-icon">📈</span>
+                            <h3>Tracking</h3>
+                        </div>
+                        <p>Monitor your mood and stress levels over time.</p>
+                        <div class="option-list">
+                            <button class="option-btn">Daily Mood Check-in</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. PHYSICAL FITNESS VIEW -->
+            <div id="view-physical" class="view">
+                <div class="eyebrow">Pillar 02</div>
+                <h2 class="section-title">Physical Fitness</h2>
+                <p class="section-sub">Build strength, improve posture, and generate custom workout plans.</p>
+
+                <div class="physical-tabs">
+                    <button class="tab-btn active" onclick="switchPhysicalTab('tab-bmi')">BMI Calculator</button>
+                    <button class="tab-btn" onclick="switchPhysicalTab('tab-physique')">Dream Physique</button>
+                    <button class="tab-btn" onclick="switchPhysicalTab('tab-tracker')">AI Tracker</button>
+                </div>
+
+                <div id="tab-bmi" class="tab-content active">
+                    <div class="coach-panel">
+                        <h3>BMI Calculator</h3>
+                        <p>Check your Body Mass Index (BMI) to understand your fitness baseline.</p>
+                        <form id="bmiForm">
+                            <div class="input-group">
+                                <label>Current Weight (kg)</label>
+                                <input type="number" id="bmiWeight" placeholder="e.g. 70" required step="0.1">
+                            </div>
+                            <div class="input-group">
+                                <label>Current Height (cm)</label>
+                                <input type="number" id="bmiHeight" placeholder="e.g. 175" required step="0.1">
+                            </div>
+                            <button type="submit" class="primary-btn">Calculate BMI</button>
+                        </form>
+                        <div id="bmiResult" style="display:none; margin-top: 20px; padding: 16px; background: var(--paper-2); border: 1px solid var(--line); border-radius: 6px;"></div>
+                    </div>
+                </div>
+
+                <div id="tab-physique" class="tab-content">
+                    <div class="coach-panel">
+                        <h3>AI Physique Transformation Planner</h3>
+                        <p>Enter your details below to generate a comprehensive 7-day workout and diet plan tailored to your goals.</p>
+                        
+                        <form id="fitnessPlanForm">
+                            <div class="input-group">
+                                <label>Current Weight (kg)</label>
+                                <input type="number" id="planWeight" placeholder="e.g. 70" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Current Height (cm)</label>
+                                <input type="number" id="planHeight" placeholder="e.g. 175" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Dream Physique Goal</label>
+                                <input type="hidden" id="planGoal" value="lean_athletic">
+                                <div class="physique-grid">
+                                    <div class="physique-card selected" onclick="selectPhysique('lean_athletic', this)">
+                                        <img src="./src/assets/images/lean_athletic_1789393743192.jpg" alt="Lean & Athletic">
+                                        <div class="label">Lean & Athletic</div>
+                                    </div>
+                                    <div class="physique-card" onclick="selectPhysique('strength_power', this)">
+                                        <img src="./src/assets/images/strength_power_1789393760070.jpg" alt="Strength & Power">
+                                        <div class="label">Strength & Power</div>
+                                    </div>
+                                    <div class="physique-card" onclick="selectPhysique('v_taper_muscle', this)">
+                                        <img src="./src/assets/images/v_taper_1789393774631.jpg" alt="V-Taper">
+                                        <div class="label">V-Taper</div>
+                                    </div>
+                                    <div class="physique-card" onclick="selectPhysique('fat_shred', this)">
+                                        <img src="./src/assets/images/fat_shred_1789393794500.jpg" alt="Fat Shred">
+                                        <div class="label">Fat Shred</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="primary-btn">Generate Plan</button>
+                        </form>
+                    </div>
+                    
+                    <div id="fitnessPlanResult" style="display:none;" class="inquiry-panel">
+                        <!-- Results injected here -->
+                    </div>
+                </div>
+
+                <div id="tab-tracker" class="tab-content">
+                    <div class="coach-panel">
+                        <h3>AI Posture & Rep Tracker</h3>
+                        <p>Select an exercise and allow camera access. The AI will guide your form and count your reps automatically.</p>
+                        
+                        <div class="input-group">
+                            <label>Select Exercise</label>
+                            <select id="exerciseSelect" style="width: 100%; padding: 12px; border-radius: 4px; border: 1px solid var(--line); background: var(--paper-2); color: var(--ink); font-family: inherit;">
+                                <option value="squats">Squats</option>
+                                <option value="pushups">Push-ups</option>
+                                <option value="bicep_curls">Bicep Curls (Right Arm)</option>
+                            </select>
+                        </div>
+                        
+                        <button id="startCameraBtn" class="primary-btn" style="margin-bottom: 16px;">Enable Camera & Start</button>
+                        <button id="stopCameraBtn" class="option-btn" style="display: none; width: 100%; justify-content: center; margin-bottom: 16px;">Stop Tracker</button>
+    
+                        <div id="cameraContainer" style="display: none; position: relative; width: 100%; border-radius: 8px; overflow: hidden; background: #000; aspect-ratio: 4/3;">
+                            <video id="videoElement" style="display: none;" autoplay playsinline></video>
+                            <canvas id="outputCanvas" width="640" height="480" style="width: 100%; height: 100%; object-fit: cover; display: block; transform: scaleX(-1);"></canvas>
+                            
+                            <div style="position: absolute; top: 16px; left: 16px; background: rgba(0,0,0,0.6); color: #fff; padding: 12px; border-radius: 8px; backdrop-filter: blur(4px);">
+                                <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-light);">Reps</div>
+                                <div id="repCountDisplay" style="font-size: 32px; font-weight: 700; line-height: 1;">0</div>
+                            </div>
+                            
+                            <div id="formFeedback" style="position: absolute; bottom: 16px; left: 16px; right: 16px; background: rgba(161, 90, 46, 0.9); color: #fff; padding: 12px; border-radius: 8px; text-align: center; font-weight: 600;">
+                                Align your body to start.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. NUTRITION VIEW -->
+            <div id="view-diet" class="view">
+                <div class="eyebrow">Pillar 03</div>
+                <h2 class="section-title">Nutrition & Fuel</h2>
+                <p class="section-sub">Analyze your meals and track your macronutrients for optimal energy.</p>
+
+                <div class="coach-panel">
+                    <h3>AI Food Scanner</h3>
+                    <p>Upload a photo of your meal. Our AI will analyze the items, estimate portions, and calculate nutritional value.</p>
+                    
+                    <div class="upload-area" id="dropZone">
+                        <div class="upload-icon">📸</div>
+                        <div class="upload-text">Click to upload meal photo</div>
+                        <div class="upload-sub">Supports JPG, PNG (Max 5MB)</div>
+                        <input type="file" id="fileInput" accept="image/jpeg, image/png">
+                    </div>
+                    
+                    <img id="imagePreview" class="preview-img" src="" alt="Meal Preview">
+                    
+                    <button id="analyzeFoodBtn" class="primary-btn" style="display:none;">Analyze Meal</button>
+                    
+                    <div id="analysisResult"></div>
+                </div>
+            </div>
+
+            <!-- 4. MENTORSHIP VIEW -->
+            <div id="view-consult" class="view">
+                <div class="eyebrow">Pillar 04</div>
+                <h2 class="section-title">Mentorship & Guidance</h2>
+                <p class="section-sub">Connect with experts for personalized 1-on-1 coaching and accountability.</p>
+
+                <div id="mentorsList">
+                    <!-- Loaded via JS -->
+                    <div class="time-slot" style="justify-content: center; color: var(--ink-faint);">Loading mentors...</div>
+                </div>
+
+                <div class="inquiry-panel">
+                    <h3>Request a Consultation</h3>
+                    <p class="desc">Fill out the form below and we will contact you to schedule a session.</p>
+                    
+                    <form id="inquiryForm">
+                        <div class="input-group">
+                            <label>Full Name</label>
+                            <input type="text" id="inqName" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Email Address</label>
+                            <input type="email" id="inqEmail" required>
+                        </div>
+                        <div class="input-group">
+                            <label>Phone Number (Optional)</label>
+                            <input type="tel" id="inqPhone">
+                        </div>
+                        <div class="input-group">
+                            <label>Select Mentor</label>
+                            <select id="inqMentor">
+                                <option value="vaishnav-suta">Vaishnav Suta (Mental Health & Mindfulness)</option>
+                                <option value="digvijay-shinde">Digvijay Shinde (Fitness & Lifestyle)</option>
+                                <option value="both">Not sure / Both</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <label>What would you like to discuss?</label>
+                            <textarea id="inqMessage" placeholder="Briefly describe your goals or challenges..." required></textarea>
+                        </div>
+                        <button type="submit" class="primary-btn">Submit Request</button>
+                    </form>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ====== SCRIPTS ====== -->
+    <script>
+        // --- UI & Navigation Logic ---
+        function switchView(viewId) {
+            // Update nav buttons
+            document.querySelectorAll('.nav-group button, .nav-home-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.target === viewId) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Update views
+            document.querySelectorAll('.view').forEach(view => {
+                view.classList.remove('active');
+            });
+            const targetView = document.getElementById(viewId);
+            if (targetView) {
+                targetView.classList.add('active');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        // Attach click listeners to nav buttons
+        document.querySelectorAll('[data-target]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                switchView(e.currentTarget.dataset.target);
+            });
+        });
+
+        // --- Settings Drawer Logic ---
+        const menuBtn = document.getElementById('menuBtn');
+        const settingsDrawer = document.getElementById('settingsDrawer');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const themeSelect = document.getElementById('themeSelect');
+
+        function toggleMenu() {
+            const isOpen = settingsDrawer.classList.contains('open');
+            if (isOpen) {
+                settingsDrawer.classList.remove('open');
+                menuBtn.setAttribute('aria-expanded', 'false');
+            } else {
+                settingsDrawer.classList.add('open');
+                menuBtn.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        menuBtn.addEventListener('click', toggleMenu);
+        closeSettingsBtn.addEventListener('click', toggleMenu);
+
+        // Close when clicking outside
+        document.addEventListener('click', (e) => {
+            if (settingsDrawer.classList.contains('open') && 
+                !settingsDrawer.contains(e.target) && 
+                !menuBtn.contains(e.target)) {
+                toggleMenu();
+            }
+        });
+
+        // Theme Toggle
+        themeSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'dark') {
+                document.body.classList.add('dark-theme');
+                localStorage.setItem('henka_theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-theme');
+                localStorage.setItem('henka_theme', 'light');
+            }
+        });
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('henka_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeSelect.value = 'dark';
+        }
+
+        // --- Utils ---
+        function showToast(message) {
+            const toast = document.getElementById('toastMsg');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function showLoading(show, text = 'Processing...') {
+            const overlay = document.getElementById('loadingOverlay');
+            document.getElementById('loadingText').textContent = text;
+            if (show) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        }
+
+        // --- Mentorship & Timetable Fetching ---
+        async function fetchMentors() {
+            try {
+                const res = await fetch('/api/mentors');
+                if (!res.ok) throw new Error('Failed to fetch mentors');
+                const data = await res.json();
+                
+                const list = document.getElementById('mentorsList');
+                if (data.mentors && data.mentors.length > 0) {
+                    list.innerHTML = data.mentors.map(m => `
+                        <div class="mentor-card">
+                            <h4>${m.name}</h4>
+                            <div class="role">${m.role}</div>
+                            <p>${m.bio}</p>
+                            <div class="mentor-contact">
+                                <strong>Contact:</strong> ${m.phone} | <a href="mailto:${m.email}">${m.email}</a><br>
+                                <span style="font-size: 12px; color: var(--ink-faint); margin-top: 4px; display: block;">
+                                    ${m.schedule.weekdays} | ${m.schedule.weekends}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('mentorsList').innerHTML = '<div class="time-slot" style="justify-content: center; color: var(--gold);">Unable to load mentors. Please try again later.</div>';
+            }
+        }
+
+        async function fetchTimetable() {
+            try {
+                const res = await fetch('/api/timetable');
+                if (!res.ok) throw new Error('Failed to fetch timetable');
+                const data = await res.json();
+                
+                const list = document.getElementById('homeTimetableList');
+                if (data && data.length > 0) {
+                    list.innerHTML = data.map(t => `
+                        <div class="time-slot">
+                            <div class="ts-time">${t.time}</div>
+                            <div class="ts-content">
+                                <div class="ts-title" style="${t.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${t.title}</div>
+                                <div class="ts-meta">
+                                    <span class="ts-tag">${t.category}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<div class="time-slot" style="justify-content: center;">No scheduled activities.</div>';
+                }
+            } catch (err) {
+                console.error(err);
+                // Silently fail or show empty
+            }
+        }
+
+        // --- Food Analysis Logic ---
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const analyzeFoodBtn = document.getElementById('analyzeFoodBtn');
+        const analysisResult = document.getElementById('analysisResult');
+        let currentBase64Image = null;
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--indigo)';
+            dropZone.style.background = 'rgba(31, 63, 88, 0.08)';
+        });
+        
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--line-strong)';
+            dropZone.style.background = 'rgba(31, 63, 88, 0.02)';
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--line-strong)';
+            dropZone.style.background = 'rgba(31, 63, 88, 0.02)';
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                handleFile(e.dataTransfer.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                handleFile(this.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.type.match('image.*')) {
+                showToast('Please upload an image file (JPG or PNG)');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentBase64Image = e.target.result;
+                imagePreview.src = currentBase64Image;
+                imagePreview.style.display = 'block';
+                analyzeFoodBtn.style.display = 'inline-flex';
+                dropZone.style.display = 'none';
+                analysisResult.style.display = 'none';
+            }
+            reader.readAsDataURL(file);
+        }
+
+        analyzeFoodBtn.addEventListener('click', async () => {
+            if (!currentBase64Image) return;
+            
+            showLoading(true, 'Analyzing nutritional content...');
+            try {
+                const res = await fetch('/api/analyze-food', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: currentBase64Image })
+                });
+                
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to analyze image');
+                
+                analysisResult.style.display = 'block';
+                
+                // Format the output
+                let html = `
+                    <h4 style="font-family: 'Shippori Mincho', serif; font-size: 18px; color: var(--indigo-deep); margin-bottom: 12px; display: flex; justify-content: space-between;">
+                        <span>Nutrition Profile</span>
+                        <span style="color: var(--kaki);">Score: ${data.healthScore}/100</span>
+                    </h4>
+                    <p style="font-size: 14px; margin-bottom: 16px;"><strong>Type:</strong> ${data.dietaryType}</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; text-align: center;">
+                        <div style="background: var(--paper-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line);">
+                            <div style="font-size: 11px; text-transform: uppercase; color: var(--ink-faint);">Calories</div>
+                            <strong style="font-size: 16px; color: var(--indigo);">${data.totalCalories}</strong>
+                        </div>
+                        <div style="background: var(--paper-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line);">
+                            <div style="font-size: 11px; text-transform: uppercase; color: var(--ink-faint);">Protein</div>
+                            <strong style="font-size: 16px; color: var(--moss);">${data.protein_g}g</strong>
+                        </div>
+                        <div style="background: var(--paper-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line);">
+                            <div style="font-size: 11px; text-transform: uppercase; color: var(--ink-faint);">Carbs</div>
+                            <strong style="font-size: 16px; color: var(--gold);">${data.carbs_g}g</strong>
+                        </div>
+                        <div style="background: var(--paper-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line);">
+                            <div style="font-size: 11px; text-transform: uppercase; color: var(--ink-faint);">Fats</div>
+                            <strong style="font-size: 16px; color: var(--kaki);">${data.fat_g}g</strong>
+                        </div>
+                    </div>
+                    
+                    <strong style="font-size: 13px; display: block; margin-bottom: 8px;">Detected Items:</strong>
+                    <ul style="font-size: 13px; color: var(--ink-soft); padding-left: 20px; margin-bottom: 16px;">
+                `;
+                
+                if (data.items && data.items.length) {
+                    data.items.forEach(item => {
+                        html += `<li>${item.name} (${item.portion}) — ${item.calories} kcal</li>`;
+                    });
+                }
+                
+                html += `</ul>
+                    <div style="background: rgba(161, 90, 46, 0.05); border-left: 3px solid var(--kaki); padding: 12px; font-size: 13.5px; border-radius: 0 4px 4px 0;">
+                        <strong>Coach Note:</strong> ${data.summary}
+                    </div>
+                    <button onclick="resetFoodUpload()" class="option-btn" style="margin-top: 16px; justify-content: center; width: 100%;">Analyze Another Meal</button>
+                `;
+                
+                analysisResult.innerHTML = html;
+                
+            } catch (err) {
+                showToast(err.message);
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        window.resetFoodUpload = function() {
+            currentBase64Image = null;
+            fileInput.value = '';
+            imagePreview.style.display = 'none';
+            analyzeFoodBtn.style.display = 'none';
+            analysisResult.style.display = 'none';
+            dropZone.style.display = 'block';
+        };
+
+        
+        
+        // --- Physical Tabs & BMI ---
+        window.selectPhysique = function(value, element) {
+            document.querySelectorAll('.physique-card').forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('planGoal').value = value;
+        };
+
+        window.switchPhysicalTab = function(tabId) {
+            document.querySelectorAll('.physical-tabs .tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            
+            document.querySelector(`[onclick="switchPhysicalTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        };
+
+        document.getElementById('bmiForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const w = parseFloat(document.getElementById('bmiWeight').value);
+            const h = parseFloat(document.getElementById('bmiHeight').value) / 100;
+            if (w && h) {
+                const bmi = (w / (h * h)).toFixed(1);
+                let cat = "Normal weight";
+                let color = "var(--moss)";
+                if (bmi < 18.5) { cat = "Underweight"; color = "var(--kaki)"; }
+                else if (bmi >= 25 && bmi < 30) { cat = "Overweight"; color = "var(--gold)"; }
+                else if (bmi >= 30) { cat = "Obese"; color = "var(--kaki)"; }
+                
+                const res = document.getElementById('bmiResult');
+                res.innerHTML = `
+                    <div style="font-size: 13px; color: var(--ink-soft);">Your BMI</div>
+                    <strong style="font-size: 32px; color: ${color};">${bmi}</strong>
+                    <div style="font-size: 14px; font-weight: 600; margin-top: 4px;">${cat}</div>
+                `;
+                res.style.display = 'block';
+                
+                // Pre-fill plan form
+                document.getElementById('planWeight').value = w;
+                document.getElementById('planHeight').value = (h*100).toFixed(0);
+            }
+        });
+
+// --- Fitness Plan Generation ---
+        document.getElementById('fitnessPlanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const weight = document.getElementById('planWeight').value;
+            const height = document.getElementById('planHeight').value;
+            const goal = document.getElementById('planGoal').value;
+            
+            showLoading(true, 'Generating personalized plan...');
+            
+            try {
+                const res = await fetch('/api/generate-plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ weight, height, dreamPhysique: goal })
+                });
+                
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to generate plan');
+                
+                const resDiv = document.getElementById('fitnessPlanResult');
+                resDiv.style.display = 'block';
+                
+                let html = `
+                    <h3 style="margin-top: 0;">${data.planTitle}</h3>
+                    <p class="desc">${data.goalOverview}</p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;">
+                        <div style="background: var(--paper); padding: 12px; border-radius: 6px; border: 1px solid var(--line);">
+                            <div style="font-size: 11px; color: var(--ink-faint);">Daily Targets</div>
+                            <strong style="display: block; font-size: 15px; color: var(--indigo); margin-top: 4px;">${data.targetCalories} kcal</strong>
+                            <div style="font-size: 12px; color: var(--ink-soft); margin-top: 4px;">
+                                ${data.protein_g}g Protein | ${data.water_liters}L Water
+                            </div>
+                        </div>
+                        <div style="background: var(--paper); padding: 12px; border-radius: 6px; border: 1px solid var(--line);">
+                            <div style="font-size: 11px; color: var(--ink-faint);">Timeline</div>
+                            <strong style="display: block; font-size: 15px; color: var(--indigo); margin-top: 4px;">${data.timelineMonths}</strong>
+                        </div>
+                    </div>
+                    
+                    <h4 style="font-family: 'Shippori Mincho', serif; font-size: 18px; margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px;">Weekly Routine</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px;">
+                `;
+                
+                data.weeklyWorkout.forEach(day => {
+                    html += `
+                        <div style="background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 12px;">
+                            <strong style="color: var(--indigo-deep); font-size: 14px;">${day.day}</strong>: ${day.dayTitle}
+                            <div style="font-size: 12px; color: var(--ink-soft); margin-top: 4px;">Focus: ${day.focus} (${day.durationMin} min)</div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                    </div>
+                    
+                    <div style="background: rgba(31, 63, 88, 0.05); border-left: 3px solid var(--indigo); padding: 16px; border-radius: 0 6px 6px 0;">
+                        <strong style="display: block; font-size: 14px; margin-bottom: 8px;">Coach Notes:</strong>
+                        <p style="font-size: 13px; margin: 0 0 8px;">${data.mentorCoachNotes.fitnessAdvice}</p>
+                        <p style="font-size: 13px; margin: 0;">${data.mentorCoachNotes.mindsetRecovery}</p>
+                    </div>
+                `;
+                
+                resDiv.innerHTML = html;
+                
+                // Add to timetable action (simulate)
+                showToast('Plan generated! Check the results below.');
+                
+            } catch (err) {
+                showToast(err.message);
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // --- Inquiry Form Submission ---
+        document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const data = {
+                name: document.getElementById('inqName').value,
+                email: document.getElementById('inqEmail').value,
+                phone: document.getElementById('inqPhone').value,
+                mentor: document.getElementById('inqMentor').value,
+                message: document.getElementById('inqMessage').value
+            };
+            
+            showLoading(true, 'Submitting request...');
+            
+            try {
+                const res = await fetch('/api/inquiries', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.error || 'Submission failed');
+                
+                showToast('Request submitted! We will reach out soon.');
+                document.getElementById('inquiryForm').reset();
+                
+            } catch (err) {
+                showToast(err.message);
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // --- AI Posture Tracker ---
+        let currentExercise = 'squats';
+        let repCount = 0;
+        let exerciseStage = "down"; 
+        let isGoodForm = true;
+        let trackerCamera = null;
+        let trackerPose = null;
+
+        const videoElement = document.getElementById('videoElement');
+        const canvasElement = document.getElementById('outputCanvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const feedbackEl = document.getElementById('formFeedback');
+        const repCountEl = document.getElementById('repCountDisplay');
+
+        document.getElementById('exerciseSelect').addEventListener('change', (e) => {
+            currentExercise = e.target.value;
+            repCount = 0;
+            repCountEl.innerText = repCount;
+            exerciseStage = "down";
+        });
+
+        function calculateAngle(a, b, c) {
+            const radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
+            let angle = Math.abs(radians * 180.0 / Math.PI);
+            if (angle > 180.0) {
+                angle = 360 - angle;
+            }
+            return angle;
+        }
+
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+            
+            if (results.poseLandmarks) {
+                let landmarks = results.poseLandmarks;
+                isGoodForm = true;
+                let formMsg = "Good Form";
+                
+                if (currentExercise === 'squats') {
+                    const hip = landmarks[23]; // left hip
+                    const knee = landmarks[25]; // left knee
+                    const ankle = landmarks[27]; // left ankle
+                    
+                    if (hip.visibility > 0.5 && knee.visibility > 0.5 && ankle.visibility > 0.5) {
+                        const angle = calculateAngle(hip, knee, ankle);
+                        
+                        if (angle > 160) {
+                            exerciseStage = "up";
+                        }
+                        if (angle < 90 && exerciseStage === "up") {
+                            exerciseStage = "down";
+                            repCount++;
+                            repCountEl.innerText = repCount;
+                        }
+                        
+                        if (knee.x < ankle.x - 0.05) { 
+                            isGoodForm = false;
+                            formMsg = "Keep knees behind toes!";
+                        }
+                    } else {
+                        isGoodForm = false;
+                        formMsg = "Make sure your full body is visible";
+                    }
+                } 
+                else if (currentExercise === 'pushups') {
+                     const shoulder = landmarks[11];
+                     const elbow = landmarks[13];
+                     const wrist = landmarks[15];
+                     
+                     if (shoulder.visibility > 0.5 && elbow.visibility > 0.5 && wrist.visibility > 0.5) {
+                         const angle = calculateAngle(shoulder, elbow, wrist);
+                         if (angle > 160) {
+                             exerciseStage = "up";
+                         }
+                         if (angle < 90 && exerciseStage === "up") {
+                             exerciseStage = "down";
+                             repCount++;
+                             repCountEl.innerText = repCount;
+                         }
+                     } else {
+                         isGoodForm = false;
+                         formMsg = "Make sure upper body is visible";
+                     }
+                }
+                else if (currentExercise === 'bicep_curls') {
+                     const shoulder = landmarks[12]; // right shoulder
+                     const elbow = landmarks[14]; // right elbow
+                     const wrist = landmarks[16]; // right wrist
+                     
+                     if (shoulder.visibility > 0.5 && elbow.visibility > 0.5 && wrist.visibility > 0.5) {
+                         const angle = calculateAngle(shoulder, elbow, wrist);
+                         if (angle > 160) {
+                             exerciseStage = "down";
+                         }
+                         if (angle < 45 && exerciseStage === "down") {
+                             exerciseStage = "up";
+                             repCount++;
+                             repCountEl.innerText = repCount;
+                         }
+                     } else {
+                         isGoodForm = false;
+                         formMsg = "Make sure your arm is visible";
+                     }
+                }
+
+                feedbackEl.style.display = 'block';
+                feedbackEl.innerText = formMsg;
+                
+                if (isGoodForm) {
+                    feedbackEl.style.background = 'rgba(87, 100, 74, 0.9)'; // moss (green)
+                    if (window.drawConnectors && window.POSE_CONNECTIONS) {
+                        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#57644A', lineWidth: 4});
+                        drawLandmarks(canvasCtx, results.poseLandmarks, {color: '#00FF00', lineWidth: 2, radius: 4});
+                    }
+                } else {
+                    feedbackEl.style.background = 'rgba(161, 90, 46, 0.9)'; // kaki (red/orange)
+                    if (window.drawConnectors && window.POSE_CONNECTIONS) {
+                        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#A15A2E', lineWidth: 4});
+                        drawLandmarks(canvasCtx, results.poseLandmarks, {color: '#FF0000', lineWidth: 2, radius: 4});
+                    }
+                }
+            } else {
+                feedbackEl.style.display = 'block';
+                feedbackEl.innerText = 'Searching for body...';
+                feedbackEl.style.background = 'rgba(31, 63, 88, 0.9)';
+            }
+            canvasCtx.restore();
+        }
+
+        document.getElementById('startCameraBtn').addEventListener('click', async () => {
+            const container = document.getElementById('cameraContainer');
+            const startBtn = document.getElementById('startCameraBtn');
+            const stopBtn = document.getElementById('stopCameraBtn');
+            
+            try {
+                // Explicitly ask for camera permission first
+                await navigator.mediaDevices.getUserMedia({ video: true });
+            } catch (err) {
+                showToast("Camera access denied or unavailable.");
+                return;
+            }
+            
+            container.style.display = 'block';
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'flex';
+            feedbackEl.style.display = 'block';
+            feedbackEl.innerText = 'Downloading AI Model (Faster Lite Version)... Please wait.';
+            feedbackEl.style.background = 'rgba(31, 63, 88, 0.9)';
+
+            if (!trackerPose) {
+                trackerPose = new window.Pose({locateFile: (file) => {
+                    return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
+                }});
+                trackerPose.setOptions({
+                    modelComplexity: 0, // 0 for faster load
+                    smoothLandmarks: true,
+                    enableSegmentation: false,
+                    smoothSegmentation: false,
+                    minDetectionConfidence: 0.5,
+                    minTrackingConfidence: 0.5
+                });
+                trackerPose.onResults(onResults);
+            }
+
+            if (!trackerCamera) {
+                trackerCamera = new window.Camera(videoElement, {
+                    onFrame: async () => {
+                        await trackerPose.send({image: videoElement});
+                    },
+                    width: 640,
+                    height: 480
+                });
+            }
+            
+            trackerCamera.start();
+        });
+
+        document.getElementById('stopCameraBtn').addEventListener('click', () => {
+            const container = document.getElementById('cameraContainer');
+            const startBtn = document.getElementById('startCameraBtn');
+            const stopBtn = document.getElementById('stopCameraBtn');
+            
+            if (trackerCamera) {
+                trackerCamera.stop();
+            }
+            
+            container.style.display = 'none';
+            startBtn.style.display = 'flex';
+            stopBtn.style.display = 'none';
+        });
+
+        // --- Init ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchMentors();
+            fetchTimetable();
+        });
+        
+    </script>
+</body>
+</html>
