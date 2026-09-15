@@ -94,6 +94,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+app.get('/api/config', (req, res) => {
+  res.json({ mapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '' });
+});
+
+
 // ====== AUTH ENDPOINTS ======
 
 // Get available languages
@@ -658,7 +663,7 @@ Respond ONLY with a valid raw JSON object in this exact shape:
   "summary": "Rich in omega-3 fatty acids and lean protein with slow-digesting complex carbohydrates for steady energy."
 }`;
 
-    // Try Gemini with gemini-3.7-flash
+    // Try Gemini with gemini-3.6-flash
     if (process.env.GEMINI_API_KEY) {
       try {
         const ai = new GoogleGenAI({
@@ -671,7 +676,7 @@ Respond ONLY with a valid raw JSON object in this exact shape:
         });
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.7-flash',
+          model: 'gemini-3.6-flash',
           contents: [
             {
               role: 'user',
@@ -893,7 +898,7 @@ Ensure 5 meals/snacks are included in "dailyDiet" (Breakfast, Mid-Morning Snack,
 Respond ONLY with the JSON object, no Markdown or markdown fences.`;
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.7-flash',
+          model: 'gemini-3.6-flash',
           contents: [{ role: 'user', parts: [{ text: prompt }] }]
         });
 
@@ -1374,7 +1379,7 @@ ${contextSummary}
         });
 
         const response = await ai.models.generateContent({
-          model: 'gemini-3.7-flash',
+          model: 'gemini-3.6-flash',
           contents: formattedContents,
         });
 

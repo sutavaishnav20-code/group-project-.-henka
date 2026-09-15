@@ -3,12 +3,23 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <title>Henka — Be The Change You Want</title>
 
     <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
     </script>
+
+    <!-- Tool Modal -->
+    <div id="toolModalOverlay" class="tool-modal-overlay">
+        <div class="tool-modal">
+            <button class="tool-modal-close" onclick="closeToolModal()">×</button>
+            <div id="toolModalContent"></div>
+        </div>
+    </div>
+    
     <script>
+
         const SUPABASE_URL = 'https://fkahswirogjxrdtzulrv.supabase.co';
         const SUPABASE_ANON_KEY =
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZrYWhzd2lyb2dqeHJkdHp1bHJ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1MzU3OTYsImV4cCI6MjEwMjExMTc5Nn0.BdBC2e20UQl7XRxkCsWrrELik15ukBBL9xye-rdjaUs';
@@ -1110,8 +1121,34 @@
         .physique-card.selected::after {
             content: '✓'; position: absolute; top: 8px; right: 8px; background: var(--indigo); color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;
         }
+
+        /* ---- Tool Modal ---- */
+        .tool-modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .tool-modal {
+            background: var(--paper); border: 1px solid var(--line); border-radius: 12px; width: 90%; max-width: 500px; padding: 24px; position: relative; max-height: 90vh; overflow-y: auto;
+        }
+        .tool-modal-close {
+            position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 24px; cursor: pointer; color: var(--ink-soft); line-height: 1;
+        }
+        .tool-modal-close:hover { color: var(--ink); }
+        
+        /* Breathing Tool */
+        .breathe-circle {
+            width: 200px; height: 200px; border-radius: 50%; background: var(--moss); margin: 40px auto; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 500; box-shadow: 0 8px 32px rgba(87,100,74,0.2); text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        @keyframes boxBreatheAnim {
+            0%   { transform: scale(1); background: var(--moss); box-shadow: 0 8px 32px rgba(87,100,74,0.2); }
+            25%  { transform: scale(1.6); background: var(--indigo); box-shadow: 0 16px 48px rgba(31,63,88,0.4); }
+            50%  { transform: scale(1.6); background: var(--indigo); box-shadow: 0 16px 48px rgba(31,63,88,0.4); }
+            75%  { transform: scale(1); background: var(--kaki); box-shadow: 0 8px 32px rgba(161,90,46,0.2); }
+            100% { transform: scale(1); background: var(--moss); box-shadow: 0 8px 32px rgba(87,100,74,0.2); }
+        }
     </style>
 
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
 
@@ -1121,6 +1158,29 @@
     </div>
 
     <div class="toast" id="toastMsg">Action completed</div>
+
+    <!-- AUTH OVERLAY -->
+    <div id="authOverlay" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--paper); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div style="background: var(--paper-2); padding: 32px; border-radius: 12px; border: 1px solid var(--line); width: 90%; max-width: 400px; box-shadow: 0 12px 48px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div class="seal" style="margin: 0 auto 16px;">H</div>
+                <h2 style="font-family: 'Shippori Mincho', serif; color: var(--indigo-deep);">Welcome to Henka</h2>
+                <p style="color: var(--ink-soft); font-size: 14px;">Sign in or create an account to personalize your journey.</p>
+            </div>
+            <form id="authForm">
+                <div class="input-group" style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase;">Full Name</label>
+                    <input type="text" id="authName" placeholder="Your Name" required style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-family: inherit;">
+                </div>
+                <div class="input-group" style="margin-bottom: 24px;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase;">Email Address</label>
+                    <input type="email" id="authEmail" placeholder="you@example.com" required style="width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); font-family: inherit;">
+                </div>
+                <button type="submit" class="primary-btn" style="width: 100%; justify-content: center; font-size: 16px;">Enter Henka</button>
+            </form>
+        </div>
+    </div>
+
 
     <!-- SETTINGS DRAWER -->
     <div class="settings-drawer" id="settingsDrawer">
@@ -1155,7 +1215,7 @@
                 <div class="seal">H</div>
                 <div class="brand-text">
                     <h1 class="logo">Henka</h1>
-                    <div class="tagline">Be The Change You Want</div>
+                    <div class="tagline" id="headerGreeting">Be The Change You Want</div>
                 </div>
             </div>
             
@@ -1194,6 +1254,12 @@
                 <div class="home-hero">
                     <h2>Welcome to Your Journey.</h2>
                     <p>A holistic space for your mind, body, and spirit. Choose a path below to begin tracking and improving your well-being.</p>
+
+                    <div style="margin-top: 16px; display: inline-flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); padding: 8px 16px; border-radius: 20px; font-size: 13px; backdrop-filter: blur(4px);">
+                        <span style="font-size: 16px;">🔥</span>
+                        <span><strong>12 Day Streak</strong> — You're building a powerful habit!</span>
+                    </div>
+
                 </div>
 
                 <div class="card-grid">
@@ -1246,9 +1312,10 @@
                             <h3>Mindfulness</h3>
                         </div>
                         <p>Guided meditations and breathing exercises.</p>
+
                         <div class="option-list">
-                            <button class="option-btn">Box Breathing (4-4-4-4)</button>
-                            <button class="option-btn">Vagus Nerve Reset</button>
+                            <button class="option-btn" onclick="openBoxBreathing()">Box Breathing (4-4-4-4)</button>
+                            <button class="option-btn" onclick="openVagusReset()">Vagus Nerve Reset</button>
                         </div>
                     </div>
                     <div class="pillar-card">
@@ -1258,8 +1325,8 @@
                         </div>
                         <p>Expressive writing and cognitive reframing.</p>
                         <div class="option-list">
-                            <button class="option-btn">Gratitude Log</button>
-                            <button class="option-btn">Anxiety Brain Dump</button>
+                            <button class="option-btn" onclick="openGratitudeLog()">Gratitude Log</button>
+                            <button class="option-btn" onclick="openBrainDump()">Anxiety Brain Dump</button>
                         </div>
                     </div>
                     <div class="pillar-card">
@@ -1269,10 +1336,11 @@
                         </div>
                         <p>Optimize your circadian rhythm and sleep hygiene.</p>
                         <div class="option-list">
-                            <button class="option-btn">Sleep Soundscapes</button>
-                            <button class="option-btn">Wind-down Routine</button>
+                            <button class="option-btn" onclick="openSoundscapes()">Sleep Soundscapes</button>
+                            <button class="option-btn" onclick="openWindDown()">Wind-down Routine</button>
                         </div>
                     </div>
+
                     <div class="pillar-card">
                         <div class="pillar-head">
                             <span class="pillar-icon">📈</span>
@@ -1280,7 +1348,19 @@
                         </div>
                         <p>Monitor your mood and stress levels over time.</p>
                         <div class="option-list">
-                            <button class="option-btn">Daily Mood Check-in</button>
+                            <button class="option-btn" onclick="openMoodTracker()">Daily Mood Check-in</button>
+                        </div>
+
+                    </div>
+
+                    <div class="pillar-card" style="grid-column: 1 / -1;">
+                        <div class="pillar-head">
+                            <span class="pillar-icon">📊</span>
+                            <h3>Sleep Quality Trend</h3>
+                        </div>
+                        <p style="margin-bottom: 16px;">Track your deep sleep cycles and restfulness.</p>
+                        <div style="background: var(--paper-2); padding: 16px; border-radius: 8px; border: 1px solid var(--line);">
+                            <div id="sleepChart" style="width: 100%; height: 160px;"></div>
                         </div>
                     </div>
                 </div>
@@ -1296,6 +1376,8 @@
                     <button class="tab-btn active" onclick="switchPhysicalTab('tab-bmi')">BMI Calculator</button>
                     <button class="tab-btn" onclick="switchPhysicalTab('tab-physique')">Dream Physique</button>
                     <button class="tab-btn" onclick="switchPhysicalTab('tab-tracker')">AI Tracker</button>
+                    <button class="tab-btn" onclick="switchPhysicalTab('tab-walk')">Walk Tracker</button>
+
                 </div>
 
                 <div id="tab-bmi" class="tab-content active">
@@ -1373,9 +1455,22 @@
                                 <option value="squats">Squats</option>
                                 <option value="pushups">Push-ups</option>
                                 <option value="bicep_curls">Bicep Curls (Right Arm)</option>
-                            </select>
+                                <option value="planks">Planks (Timed)</option>
+                                </select>
                         </div>
                         
+                        
+                        <div style="display: flex; gap: 12px; margin-bottom: 16px; margin-top: 16px;">
+                            <button id="downloadReportBtn" class="option-btn" style="flex: 1; justify-content: center;">📄 Download Report</button>
+                        </div>
+                        
+                        <div id="trackerChartContainer" style="margin-bottom: 24px; padding: 16px; background: var(--paper-2); border-radius: 8px; border: 1px solid var(--line);">
+                            <h4 style="margin-bottom: 12px; font-size: 14px; color: var(--ink-soft);">Weekly Progress (Reps/Secs)</h4>
+                            <div id="d3Chart" style="width: 100%; height: 200px;"></div>
+                            <div id="progressInsights" style="margin-top: 16px; padding: 12px; background: var(--paper); border-left: 4px solid var(--moss); border-radius: 4px; font-size: 13px; color: var(--ink); line-height: 1.5;">
+                                Complete a workout to see insights here.
+                            </div>
+                        </div>
                         <button id="startCameraBtn" class="primary-btn" style="margin-bottom: 16px;">Enable Camera & Start</button>
                         <button id="stopCameraBtn" class="option-btn" style="display: none; width: 100%; justify-content: center; margin-bottom: 16px;">Stop Tracker</button>
     
@@ -1394,30 +1489,133 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
+            
+                <div id="tab-walk" class="tab-content">
+                    <div class="coach-panel">
+                        <h3>Walk & Run Tracker</h3>
+                        <p>Track your real-world movement using GPS. Maps will render if a Google Maps API Key is provided.</p>
+                        
+                        <div style="display: flex; gap: 12px; margin-bottom: 24px;">
+                            <button id="startWalkBtn" class="primary-btn" style="flex: 1; justify-content: center;">Start Walk</button>
+                            <button id="stopWalkBtn" class="option-btn" style="flex: 1; justify-content: center; display: none; background: rgba(220, 38, 38, 0.1); color: #dc2626; border: 1px solid #dc2626;">End Walk</button>
+                        </div>
+                        
+                        <div class="pillar-grid" style="margin-bottom: 24px;">
+                            <div class="pillar-card" style="padding: 16px; text-align: center;">
+                                <div style="font-size: 24px; font-weight: 600; color: var(--indigo);" id="walkDistance">0.00</div>
+                                <div style="font-size: 12px; color: var(--ink-soft); text-transform: uppercase;">Kilometers</div>
+                            </div>
+                            <div class="pillar-card" style="padding: 16px; text-align: center;">
+                                <div style="font-size: 24px; font-weight: 600; color: var(--moss);" id="walkSteps">0</div>
+                                <div style="font-size: 12px; color: var(--ink-soft); text-transform: uppercase;">Est. Steps</div>
+                            </div>
+                            <div class="pillar-card" style="padding: 16px; text-align: center;">
+                                <div style="font-size: 24px; font-weight: 600; color: #A15A2E;" id="walkCals">0</div>
+                                <div style="font-size: 12px; color: var(--ink-soft); text-transform: uppercase;">Calories (kcal)</div>
+                            </div>
+                            <div class="pillar-card" style="padding: 16px; text-align: center;">
+                                <div style="font-size: 24px; font-weight: 600; color: var(--ink);" id="walkTime">00:00</div>
+                                <div style="font-size: 12px; color: var(--ink-soft); text-transform: uppercase;">Duration</div>
+                            </div>
+                        </div>
+
+                        <div id="mapContainer" style="width: 100%; height: 300px; background: var(--paper-2); border-radius: 8px; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                            <span style="color: var(--ink-soft); font-size: 14px; text-align: center; padding: 16px;" id="mapPlaceholder">Loading GPS... (Configure Google Maps API Key in Secrets to render actual map)</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
             <!-- 3. NUTRITION VIEW -->
             <div id="view-diet" class="view">
                 <div class="eyebrow">Pillar 03</div>
                 <h2 class="section-title">Nutrition & Fuel</h2>
                 <p class="section-sub">Analyze your meals and track your macronutrients for optimal energy.</p>
 
-                <div class="coach-panel">
-                    <h3>AI Food Scanner</h3>
-                    <p>Upload a photo of your meal. Our AI will analyze the items, estimate portions, and calculate nutritional value.</p>
-                    
-                    <div class="upload-area" id="dropZone">
-                        <div class="upload-icon">📸</div>
-                        <div class="upload-text">Click to upload meal photo</div>
-                        <div class="upload-sub">Supports JPG, PNG (Max 5MB)</div>
-                        <input type="file" id="fileInput" accept="image/jpeg, image/png">
+                <div class="physical-tabs" style="margin-bottom: 24px;">
+                    <button class="tab-btn active" onclick="switchNutritionTab('nutri-macro', this)">Macro Calculator</button>
+                    <button class="tab-btn" onclick="switchNutritionTab('nutri-scanner', this)">AI Food Scanner</button>
+                    <button class="tab-btn" onclick="switchNutritionTab('nutri-hydration', this)">Hydration Tracker</button>
+                </div>
+
+                <div id="nutri-macro" class="tab-content active">
+
+                    <div id="nutritionAlertContainer" style="margin-bottom: 24px; padding: 16px; background: var(--paper-2); border-radius: 8px; border: 1px solid var(--line);">
+                        <h4 style="margin-bottom: 12px; font-size: 14px; color: var(--ink-soft); display: flex; align-items: center; gap: 8px;">
+                            <span>⚠️</span> Nutrition Alerts & Reminders
+                        </h4>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <div style="padding: 12px; background: var(--paper); border-left: 4px solid var(--moss); border-radius: 4px; font-size: 13px;">
+                                <strong>Hydration:</strong> You are 3 glasses behind your daily water goal.
+                            </div>
+                            <div style="padding: 12px; background: var(--paper); border-left: 4px solid #A15A2E; border-radius: 4px; font-size: 13px;">
+                                <strong>Protein Target:</strong> Make sure your next meal is protein-rich to hit your daily macro goal.
+                            </div>
+                        </div>
                     </div>
-                    
-                    <img id="imagePreview" class="preview-img" src="" alt="Meal Preview">
-                    
-                    <button id="analyzeFoodBtn" class="primary-btn" style="display:none;">Analyze Meal</button>
-                    
-                    <div id="analysisResult"></div>
+
+                    <div class="coach-panel">
+                        <h3>Daily Macro Calculator</h3>
+                        <p>Calculate your daily protein, fats, and carbs targets based on your body and goals.</p>
+                        <form id="macroForm">
+                            <div class="input-group">
+                                <label>Weight (kg)</label>
+                                <input type="number" id="macroWeight" placeholder="70" required step="1">
+                            </div>
+                            <div class="input-group">
+                                <label>Goal</label>
+                                <select id="macroGoal">
+                                    <option value="maintain">Maintain Weight</option>
+                                    <option value="lose">Lose Fat</option>
+                                    <option value="gain">Build Muscle</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="primary-btn">Calculate Macros</button>
+                        </form>
+                        <div id="macroResult" style="display:none; margin-top:16px; padding:16px; background:var(--paper-2); border:1px solid var(--line); border-radius:6px; font-size:14px; line-height:1.6;"></div>
+                    </div>
+                </div>
+
+                <div id="nutri-scanner" class="tab-content">
+                    <div class="coach-panel">
+                        <h3>AI Food Scanner</h3>
+                        <p>Upload or snap a photo of your meal. Our AI will classify it as healthy/unhealthy, list exact nutrients, and provide a health score.</p>
+                        
+                        <div style="display:flex; gap:12px; margin-bottom: 16px;">
+                            <button class="option-btn" onclick="document.getElementById('fileInput').click()" style="flex:1; justify-content:center;">📁 Upload Image</button>
+                            <button class="option-btn" onclick="startFoodCamera()" style="flex:1; justify-content:center;">📷 Snap Photo</button>
+                        </div>
+                        <input type="file" id="fileInput" accept="image/jpeg, image/png" style="display:none;">
+
+                        <div id="foodCameraContainer" style="display:none; position:relative; border-radius:8px; overflow:hidden; background:#000; margin-bottom:16px;">
+                            <video id="foodVideo" style="width:100%; display:block;" autoplay playsinline></video>
+                            <button class="primary-btn" onclick="captureFoodPhoto()" style="position:absolute; bottom:16px; left:50%; transform:translateX(-50%);">Capture & Analyze</button>
+                        </div>
+                        
+                        <img id="imagePreview" class="preview-img" src="" alt="Meal Preview" style="display:none; width:100%; border-radius:8px; margin-bottom:16px; object-fit:cover; max-height:300px;">
+                        
+                        <button id="analyzeFoodBtn" class="primary-btn" style="display:none; width:100%; justify-content:center;">Analyze Meal</button>
+                        
+                        <div id="analysisResult" style="display:none; margin-top:24px;"></div>
+                    </div>
+                </div>
+
+                <div id="nutri-hydration" class="tab-content">
+                    <div class="coach-panel">
+                        <h3>Hydration Tracker</h3>
+                        <p>Track your daily water intake. Goal: 2.5 - 3.0 Liters.</p>
+                        <div style="text-align:center; padding: 24px;">
+                            <div style="font-size:48px; color:var(--ocean); font-weight:700;" id="waterCount">0 L</div>
+                            <div style="font-size:14px; color:var(--ink-soft); margin-top:8px;">Consumed today</div>
+                            
+                            <div style="display:flex; gap:12px; justify-content:center; margin-top:24px;">
+                                <button class="primary-btn" style="background:var(--ocean);" onclick="addWater(0.25)">+ 250ml</button>
+                                <button class="primary-btn" style="background:var(--ocean);" onclick="addWater(0.50)">+ 500ml</button>
+                                <button class="option-btn" onclick="resetWater()">Reset</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1470,7 +1668,17 @@
     </div>
 
     <!-- ====== SCRIPTS ====== -->
+
+    <!-- Tool Modal -->
+    <div id="toolModalOverlay" class="tool-modal-overlay">
+        <div class="tool-modal">
+            <button class="tool-modal-close" onclick="closeToolModal()">×</button>
+            <div id="toolModalContent"></div>
+        </div>
+    </div>
+    
     <script>
+
         // --- UI & Navigation Logic ---
         function switchView(viewId) {
             // Update nav buttons
@@ -1489,6 +1697,14 @@
             if (targetView) {
                 targetView.classList.add('active');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Re-render charts when their container becomes visible
+                if(viewId === 'view-mental' && typeof window.renderSleepChart === 'function') {
+                    setTimeout(window.renderSleepChart, 50);
+                }
+                if(viewId === 'view-physical' && typeof window.renderChart === 'function') {
+                    setTimeout(window.renderChart, 50);
+                }
             }
         }
 
@@ -1621,141 +1837,507 @@
             }
         }
 
-        // --- Food Analysis Logic ---
-        const dropZone = document.getElementById('dropZone');
+        // --- Nutrition Tabs Logic ---
+        window.switchNutritionTab = function(tabId, btn) {
+            document.querySelectorAll('#view-diet .tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('#view-diet .tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            if (tabId === 'tab-tracker' && typeof window.renderChart === 'function') {
+                setTimeout(window.renderChart, 50);
+            }
+
+            if (btn) btn.classList.add('active');
+        };
+
+        // --- Macro Calculator Logic ---
+        const macroForm = document.getElementById('macroForm');
+        if (macroForm) {
+            macroForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const weight = parseFloat(document.getElementById('macroWeight').value);
+                const goal = document.getElementById('macroGoal').value;
+                
+                if(!weight) return;
+                
+                let calories = weight * 22 * 1.5; // Basal roughly
+                if (goal === 'lose') calories *= 0.8;
+                if (goal === 'gain') calories *= 1.15;
+                
+                let protein = weight * 2.2; // High protein
+                let fat = (calories * 0.25) / 9; // 25% fats
+                let carbs = (calories - (protein * 4) - (fat * 9)) / 4;
+                
+                const res = document.getElementById('macroResult');
+                res.innerHTML = `
+                    <div style="text-align:center; margin-bottom:12px;"><strong>Your Daily Targets</strong></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Calories:</span> <strong>${Math.round(calories)} kcal</strong></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Protein:</span> <strong>${Math.round(protein)}g</strong></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span>Fats:</span> <strong>${Math.round(fat)}g</strong></div>
+                    <div style="display:flex; justify-content:space-between;"><span>Carbs:</span> <strong>${Math.round(carbs)}g</strong></div>
+                `;
+                res.style.display = 'block';
+            });
+        }
+
+        // --- Hydration Tracker Logic ---
+        let dailyWater = parseFloat(localStorage.getItem('dailyWater') || '0');
+        const waterDisplay = document.getElementById('waterCount');
+        
+        function updateWaterDisplay() {
+            if (waterDisplay) waterDisplay.innerText = dailyWater.toFixed(2) + ' L';
+        }
+        updateWaterDisplay();
+        
+        window.addWater = function(amount) {
+            dailyWater += amount;
+            localStorage.setItem('dailyWater', dailyWater.toString());
+            updateWaterDisplay();
+        };
+        window.resetWater = function() {
+            dailyWater = 0;
+            localStorage.setItem('dailyWater', dailyWater.toString());
+            updateWaterDisplay();
+        };
+
+        // --- AI Food Scanner Logic ---
         const fileInput = document.getElementById('fileInput');
         const imagePreview = document.getElementById('imagePreview');
         const analyzeFoodBtn = document.getElementById('analyzeFoodBtn');
         const analysisResult = document.getElementById('analysisResult');
+        const foodCameraContainer = document.getElementById('foodCameraContainer');
+        const foodVideo = document.getElementById('foodVideo');
+        
         let currentBase64Image = null;
+        let foodStream = null;
 
-        dropZone.addEventListener('click', () => fileInput.click());
-        
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--indigo)';
-            dropZone.style.background = 'rgba(31, 63, 88, 0.08)';
-        });
-        
-        dropZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--line-strong)';
-            dropZone.style.background = 'rgba(31, 63, 88, 0.02)';
-        });
-        
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.style.borderColor = 'var(--line-strong)';
-            dropZone.style.background = 'rgba(31, 63, 88, 0.02)';
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                handleFile(e.dataTransfer.files[0]);
-            }
-        });
-
-        fileInput.addEventListener('change', function() {
-            if (this.files && this.files[0]) {
-                handleFile(this.files[0]);
-            }
-        });
-
-        function handleFile(file) {
-            if (!file.type.match('image.*')) {
-                showToast('Please upload an image file (JPG or PNG)');
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentBase64Image = e.target.result;
-                imagePreview.src = currentBase64Image;
-                imagePreview.style.display = 'block';
-                analyzeFoodBtn.style.display = 'inline-flex';
-                dropZone.style.display = 'none';
-                analysisResult.style.display = 'none';
-            }
-            reader.readAsDataURL(file);
-        }
-
-        analyzeFoodBtn.addEventListener('click', async () => {
-            if (!currentBase64Image) return;
-            
-            showLoading(true, 'Analyzing nutritional content...');
+        window.startFoodCamera = async function() {
             try {
-                const res = await fetch('/api/analyze-food', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ image: currentBase64Image })
-                });
-                
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Failed to analyze image');
-                
-                analysisResult.style.display = 'block';
-                
-                // Format the output
-                let html = `
-                    <h4 style="font-family: 'Shippori Mincho', serif; font-size: 18px; color: var(--indigo-deep); margin-bottom: 12px; display: flex; justify-content: space-between;">
-                        <span>Nutrition Profile</span>
-                        <span style="color: var(--kaki);">Score: ${data.healthScore}/100</span>
-                    </h4>
-                    <p style="font-size: 14px; margin-bottom: 16px;"><strong>Type:</strong> ${data.dietaryType}</p>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; text-align: center;">
-                        <div style="background: var(--paper-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line);">
-                            <div style="font-size: 11px; text-transform: uppercase; color: var(--ink-faint);">Calories</div>
-                            <strong style="font-size: 16px; color: var(--indigo);">${data.totalCalories}</strong>
-                        </div>
-                        <div style="background: var(--paper-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line);">
-                            <div style="font-size: 11px; text-transform: uppercase; color: var(--ink-faint);">Protein</div>
-                            <strong style="font-size: 16px; color: var(--moss);">${data.protein_g}g</strong>
-                        </div>
-                        <div style="background: var(--paper-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line);">
-                            <div style="font-size: 11px; text-transform: uppercase; color: var(--ink-faint);">Carbs</div>
-                            <strong style="font-size: 16px; color: var(--gold);">${data.carbs_g}g</strong>
-                        </div>
-                        <div style="background: var(--paper-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line);">
-                            <div style="font-size: 11px; text-transform: uppercase; color: var(--ink-faint);">Fats</div>
-                            <strong style="font-size: 16px; color: var(--kaki);">${data.fat_g}g</strong>
-                        </div>
-                    </div>
-                    
-                    <strong style="font-size: 13px; display: block; margin-bottom: 8px;">Detected Items:</strong>
-                    <ul style="font-size: 13px; color: var(--ink-soft); padding-left: 20px; margin-bottom: 16px;">
-                `;
-                
-                if (data.items && data.items.length) {
-                    data.items.forEach(item => {
-                        html += `<li>${item.name} (${item.portion}) — ${item.calories} kcal</li>`;
-                    });
-                }
-                
-                html += `</ul>
-                    <div style="background: rgba(161, 90, 46, 0.05); border-left: 3px solid var(--kaki); padding: 12px; font-size: 13.5px; border-radius: 0 4px 4px 0;">
-                        <strong>Coach Note:</strong> ${data.summary}
-                    </div>
-                    <button onclick="resetFoodUpload()" class="option-btn" style="margin-top: 16px; justify-content: center; width: 100%;">Analyze Another Meal</button>
-                `;
-                
-                analysisResult.innerHTML = html;
-                
+                foodStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+                foodVideo.srcObject = foodStream;
+                foodCameraContainer.style.display = 'block';
+                imagePreview.style.display = 'none';
+                if (analyzeFoodBtn) analyzeFoodBtn.style.display = 'none';
+                if (analysisResult) analysisResult.style.display = 'none';
             } catch (err) {
-                showToast(err.message);
-            } finally {
-                showLoading(false);
+                showToast('Camera access denied or unavailable.');
             }
-        });
-
-        window.resetFoodUpload = function() {
-            currentBase64Image = null;
-            fileInput.value = '';
-            imagePreview.style.display = 'none';
-            analyzeFoodBtn.style.display = 'none';
-            analysisResult.style.display = 'none';
-            dropZone.style.display = 'block';
         };
 
+        window.captureFoodPhoto = function() {
+            if (!foodStream) return;
+            const canvas = document.createElement('canvas');
+            canvas.width = foodVideo.videoWidth;
+            canvas.height = foodVideo.videoHeight;
+            canvas.getContext('2d').drawImage(foodVideo, 0, 0);
+            currentBase64Image = canvas.toDataURL('image/jpeg', 0.8);
+            
+            // Stop camera
+            foodStream.getTracks().forEach(t => t.stop());
+            foodStream = null;
+            foodCameraContainer.style.display = 'none';
+            
+            // Show preview
+            imagePreview.src = currentBase64Image;
+            imagePreview.style.display = 'block';
+            if (analyzeFoodBtn) analyzeFoodBtn.style.display = 'flex';
+        };
+
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        currentBase64Image = e.target.result;
+                        imagePreview.src = currentBase64Image;
+                        imagePreview.style.display = 'block';
+                        if (analyzeFoodBtn) analyzeFoodBtn.style.display = 'flex';
+                        if (analysisResult) analysisResult.style.display = 'none';
+                        if (foodCameraContainer) foodCameraContainer.style.display = 'none';
+                        if (foodStream) {
+                            foodStream.getTracks().forEach(t => t.stop());
+                            foodStream = null;
+                        }
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+
+        if (analyzeFoodBtn) {
+            analyzeFoodBtn.addEventListener('click', async () => {
+                if (!currentBase64Image) return;
+                
+                showLoading(true, 'Analyzing nutritional content...');
+                try {
+                    const res = await fetch('/api/analyze-food', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: currentBase64Image })
+                    });
+                    
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Failed to analyze image');
+                    
+                    if (analysisResult) analysisResult.style.display = 'block';
+                    
+                    const isHealthy = data.healthScore >= 60;
+                    const healthBadge = isHealthy 
+                        ? `<span style="background:var(--moss); color:#fff; padding:4px 8px; border-radius:4px; font-size:12px;">✅ Healthy (${data.healthScore}/100)</span>`
+                        : `<span style="background:var(--kaki); color:#fff; padding:4px 8px; border-radius:4px; font-size:12px;">⚠️ Unhealthy (${data.healthScore}/100)</span>`;
+
+                    let html = `
+                        <h4 style="font-family: 'Shippori Mincho', serif; font-size: 18px; color: var(--indigo-deep); margin-bottom: 12px; display: flex; justify-content: space-between; align-items:center;">
+                            <span>Nutrition Profile</span>
+                            ${healthBadge}
+                        </h4>
+                        <p style="font-size: 14px; margin-bottom: 16px;"><strong>Type:</strong> ${data.dietaryType}</p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; text-align: center;">
+                            <div style="background: var(--paper-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line);">
+                                <div style="font-size: 11px; text-transform: uppercase; color: var(--ink-faint);">Calories</div>
+                                <strong style="font-size: 16px; color: var(--indigo);">${data.totalCalories}</strong>
+                            </div>
+                            <div style="background: var(--paper-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line);">
+                                <div style="font-size: 11px; text-transform: uppercase; color: var(--ink-faint);">Protein</div>
+                                <strong style="font-size: 16px; color: var(--moss);">${data.protein_g}g</strong>
+                            </div>
+                            <div style="background: var(--paper-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line);">
+                                <div style="font-size: 11px; text-transform: uppercase; color: var(--ink-faint);">Carbs</div>
+                                <strong style="font-size: 16px; color: var(--gold);">${data.carbs_g}g</strong>
+                            </div>
+                            <div style="background: var(--paper-2); padding: 10px; border-radius: 6px; border: 1px solid var(--line);">
+                                <div style="font-size: 11px; text-transform: uppercase; color: var(--ink-faint);">Fats</div>
+                                <strong style="font-size: 16px; color: var(--kaki);">${data.fat_g}g</strong>
+                            </div>
+                        </div>
+                        
+                        <strong style="font-size: 13px; display: block; margin-bottom: 8px;">Detected Items:</strong>
+                        <ul style="font-size: 13px; color: var(--ink-soft); padding-left: 20px; margin-bottom: 16px;">
+                    `;
+                    
+                    if (data.items && data.items.length) {
+                        data.items.forEach(item => {
+                            html += `<li>${item.name} (${item.portion}) — ${item.calories} kcal</li>`;
+                        });
+                    } else {
+                        html += `<li>No specific items detected.</li>`;
+                    }
+                    
+                    html += `</ul>
+                        <div style="background: rgba(161, 90, 46, 0.05); border-left: 3px solid var(--kaki); padding: 12px; border-radius: 0 6px 6px 0; font-size: 13px; font-style: italic; color: var(--ink);">
+                            "${data.summary}"
+                        </div>
+                    `;
+                    
+                    if (analysisResult) analysisResult.innerHTML = html;
+                } catch (err) {
+                    showToast(err.message);
+                } finally {
+                    showLoading(false);
+                }
+            });
+        }
+
+
         
         
+
+        // --- Mental Health Tools ---
+        const modalOverlay = document.getElementById('toolModalOverlay');
+        const modalContent = document.getElementById('toolModalContent');
+        let breathingInterval = null;
+
+        let globalAudioCtx = null;
+        let globalNoiseNode = null;
+        
+        function closeToolModal() {
+            modalOverlay.style.display = 'none';
+            modalContent.innerHTML = '';
+            if (breathingInterval) {
+                clearInterval(breathingInterval);
+                breathingInterval = null;
+            }
+            if (globalNoiseNode) { globalNoiseNode.stop(); globalNoiseNode.disconnect(); globalNoiseNode = null; }
+            if (globalAudioCtx && globalAudioCtx.state !== 'closed') { globalAudioCtx.close(); globalAudioCtx = null; }
+        }
+
+        window.closeToolModal = closeToolModal;
+
+
+
+        window.openVagusReset = function() {
+            modalContent.innerHTML = `
+                <h3 style="margin-top:0;">Vagus Nerve Reset</h3>
+                <p style="font-size:14px; color:var(--ink-soft); margin-bottom: 16px;">This exercise shifts your nervous system into a parasympathetic (rest and digest) state.</p>
+                <div style="background:var(--paper-2); padding:16px; border-radius:8px; border:1px solid var(--line);">
+                    <ol style="padding-left:16px; margin:0; line-height:1.6; font-size: 14.5px;">
+                        <li>Interlock your fingers and place them behind your head.</li>
+                        <li>Keep your head facing straight forward.</li>
+                        <li>Look as far to the <strong>RIGHT</strong> as you comfortably can, using only your eyes.</li>
+                        <li>Hold until you yawn, sigh, or swallow (typically 30-60 seconds).</li>
+                        <li>Bring your eyes back to center.</li>
+                        <li>Repeat looking to the <strong>LEFT</strong>.</li>
+                    </ol>
+                </div>
+                <button class="primary-btn" style="width:100%; justify-content:center; margin-top:20px;" onclick="closeToolModal()">I've Completed This</button>
+            `;
+            modalOverlay.style.display = 'flex';
+        };
+
+        window.openGratitudeLog = function() {
+            let logs = JSON.parse(localStorage.getItem('gratitudeLogs') || '[]');
+            let logsHtml = logs.slice(0, 5).map(l => `<div style="font-size:13px; padding:8px 0; border-bottom:1px solid var(--line);"><strong>${l.date}</strong>: ${l.text}</div>`).join('');
+            
+            modalContent.innerHTML = `
+                <h3 style="margin-top:0;">Gratitude Log</h3>
+                <p style="font-size:14px; color:var(--ink-soft); margin-bottom: 16px;">Writing down things you are grateful for rewires your brain to spot the positive.</p>
+                <input type="text" id="gratitudeInput" placeholder="Today I am grateful for..." style="width:100%; padding:12px; border-radius:4px; border:1px solid var(--line); margin-bottom:16px; background:var(--paper-2); color:var(--ink); font-family:inherit;">
+                <button class="primary-btn" id="saveGratitudeBtn" style="width:100%; justify-content:center;">Save Entry</button>
+                
+                <h4 style="margin-top:24px; margin-bottom:8px;">Recent Entries</h4>
+                <div>${logsHtml || '<div style="font-size:13px; color:var(--ink-soft);">No entries yet.</div>'}</div>
+            `;
+            modalOverlay.style.display = 'flex';
+
+            document.getElementById('saveGratitudeBtn').addEventListener('click', () => {
+                const text = document.getElementById('gratitudeInput').value.trim();
+                if(!text) return;
+                const log = { date: new Date().toLocaleDateString(), text };
+                logs.unshift(log);
+                localStorage.setItem('gratitudeLogs', JSON.stringify(logs));
+                showToast('Gratitude logged!');
+                closeToolModal();
+            });
+        };
+
+        window.openSoundscapes = function() {
+            modalContent.innerHTML = `
+                <h3 style="margin-top:0;">Sleep Soundscapes</h3>
+                <p style="font-size:14px; color:var(--ink-soft); margin-bottom: 16px;">Deep synthetic noise to mask background sounds and aid deep sleep.</p>
+                <div style="display:flex; gap:12px; flex-direction:column;">
+                    <button class="option-btn" id="btnBrownNoise" style="justify-content:center;">▶ Play Brown Noise (Deep & Warm)</button>
+                    <button class="option-btn" id="btnPinkNoise" style="justify-content:center;">▶ Play Pink Noise (Balanced)</button>
+                    <button class="option-btn" id="btnStopNoise" style="justify-content:center; display:none; color:var(--kaki);">⏹ Stop Audio</button>
+                </div>
+            `;
+            modalOverlay.style.display = 'flex';
+
+            function stopAudio() {
+                if (globalNoiseNode) { globalNoiseNode.stop(); globalNoiseNode.disconnect(); globalNoiseNode = null; }
+                if (globalAudioCtx && globalAudioCtx.state !== 'closed') { globalAudioCtx.close(); globalAudioCtx = null; }
+                document.getElementById('btnStopNoise').style.display = 'none';
+            }
+            
+            function playNoise(type) {
+                stopAudio();
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                globalAudioCtx = new AudioContext();
+                const bufferSize = globalAudioCtx.sampleRate * 2; // 2 seconds buffer
+                const buffer = globalAudioCtx.createBuffer(1, bufferSize, globalAudioCtx.sampleRate);
+                const output = buffer.getChannelData(0);
+                
+                if (type === 'brown') {
+                    let lastOut = 0;
+                    for (let i = 0; i < bufferSize; i++) {
+                        let white = Math.random() * 2 - 1;
+                        output[i] = (lastOut + (0.02 * white)) / 1.02;
+                        lastOut = output[i];
+                        output[i] *= 3.5; // Compensate for volume drop
+                    }
+                } else if (type === 'pink') {
+                    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+                    for (let i = 0; i < bufferSize; i++) {
+                        let white = Math.random() * 2 - 1;
+                        b0 = 0.99886 * b0 + white * 0.0555179;
+                        b1 = 0.99332 * b1 + white * 0.0750759;
+                        b2 = 0.96900 * b2 + white * 0.1538520;
+                        b3 = 0.86650 * b3 + white * 0.3104856;
+                        b4 = 0.55000 * b4 + white * 0.5329522;
+                        b5 = -0.7616 * b5 - white * 0.0168980;
+                        output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                        output[i] *= 0.11; // Compensate
+                        b6 = white * 0.115926;
+                    }
+                }
+                
+                globalNoiseNode = globalAudioCtx.createBufferSource();
+                globalNoiseNode.buffer = buffer;
+                globalNoiseNode.loop = true;
+                
+                // Add soft gain node so it's not too loud
+                const gainNode = globalAudioCtx.createGain();
+                gainNode.gain.value = 0.5;
+                
+                globalNoiseNode.connect(gainNode);
+                gainNode.connect(globalAudioCtx.destination);
+                globalNoiseNode.start();
+                document.getElementById('btnStopNoise').style.display = 'flex';
+            }
+
+            document.getElementById('btnBrownNoise').addEventListener('click', () => playNoise('brown'));
+            document.getElementById('btnPinkNoise').addEventListener('click', () => playNoise('pink'));
+            document.getElementById('btnStopNoise').addEventListener('click', stopAudio);
+        };
+
+        window.openWindDown = function() {
+            let tasks = JSON.parse(localStorage.getItem('windDownTasks') || '[]');
+            if (tasks.length === 0) {
+                tasks = [
+                    { id: 1, text: 'Dim overhead lights & screens', done: false },
+                    { id: 2, text: 'Set room temperature to cool (18°C/65°F)', done: false },
+                    { id: 3, text: 'Prepare clothes for tomorrow', done: false },
+                    { id: 4, text: 'Read a physical book or listen to audio', done: false }
+                ];
+            }
+
+            const renderTasks = () => {
+                return tasks.map(t => `
+                    <div style="display:flex; align-items:center; gap:12px; padding:12px; border-bottom:1px solid var(--line); background:${t.done ? 'var(--paper-2)' : 'transparent'};">
+                        <input type="checkbox" id="wd-${t.id}" ${t.done ? 'checked' : ''} style="width:20px; height:20px; cursor:pointer;" onchange="toggleWindDown(${t.id}, this.checked)">
+                        <label for="wd-${t.id}" style="cursor:pointer; flex:1; text-decoration:${t.done ? 'line-through' : 'none'}; color:${t.done ? 'var(--ink-soft)' : 'var(--ink)'}; font-size: 14.5px;">${t.text}</label>
+                    </div>
+                `).join('');
+            };
+
+            modalContent.innerHTML = `
+                <h3 style="margin-top:0;">Evening Wind-down Routine</h3>
+                <p style="font-size:14px; color:var(--ink-soft); margin-bottom: 16px;">Check off these habits to signal to your brain that it's time to rest.</p>
+                <div id="windDownList" style="border:1px solid var(--line); border-radius:8px; overflow:hidden;">
+                    ${renderTasks()}
+                </div>
+                <button class="option-btn" style="width:100%; justify-content:center; margin-top:16px;" onclick="resetWindDown()">Reset Routine for Today</button>
+            `;
+            modalOverlay.style.display = 'flex';
+
+            window.toggleWindDown = function(id, checked) {
+                const task = tasks.find(t => t.id === id);
+                if(task) task.done = checked;
+                localStorage.setItem('windDownTasks', JSON.stringify(tasks));
+                document.getElementById('windDownList').innerHTML = renderTasks();
+            };
+
+            window.resetWindDown = function() {
+                tasks.forEach(t => t.done = false);
+                localStorage.setItem('windDownTasks', JSON.stringify(tasks));
+                document.getElementById('windDownList').innerHTML = renderTasks();
+            };
+        };
+
+        // --- End of New Mental Health Tools ---
+
+        window.openBoxBreathing = function() {
+            modalContent.innerHTML = `
+                <h3 style="margin-top:0;">Box Breathing</h3>
+                <p>Follow the circle to regulate your nervous system.</p>
+                <div id="breatheCircle" class="breathe-circle">Ready</div>
+                <button class="primary-btn" id="startBreatheBtn" style="width:100%; justify-content:center;">Start Session</button>
+            `;
+            modalOverlay.style.display = 'flex';
+
+            document.getElementById('startBreatheBtn').addEventListener('click', () => {
+                document.getElementById('startBreatheBtn').style.display = 'none';
+                const circle = document.getElementById('breatheCircle');
+                const phases = [
+                    { text: 'Inhale', scale: '1.5', color: 'var(--moss)' },
+                    { text: 'Hold', scale: '1.5', color: 'var(--indigo)' },
+                    { text: 'Exhale', scale: '1', color: 'var(--kaki)' },
+                    { text: 'Hold', scale: '1', color: 'var(--ink-soft)' }
+                ];
+                let phaseIndex = 0;
+
+                function nextPhase() {
+                    if (!document.getElementById('breatheCircle')) return;
+                    circle.innerText = phases[phaseIndex].text;
+                    circle.style.transform = `scale(${phases[phaseIndex].scale})`;
+                    circle.style.background = phases[phaseIndex].color;
+                    phaseIndex = (phaseIndex + 1) % 4;
+                }
+
+                nextPhase(); // immediate start
+                breathingInterval = setInterval(nextPhase, 4000);
+            });
+        };
+
+        window.openBrainDump = function() {
+            modalContent.innerHTML = `
+                <h3 style="margin-top:0;">Anxiety Brain Dump</h3>
+                <p>Write out what's bothering you. Our AI will help reframe it objectively.</p>
+                <textarea id="brainDumpText" rows="5" style="width:100%; padding:12px; border-radius:4px; border:1px solid var(--line); margin-bottom:16px; background:var(--paper-2); color:var(--ink); font-family:inherit;" placeholder="I feel overwhelmed because..."></textarea>
+                <button class="primary-btn" id="brainDumpBtn" style="width:100%; justify-content:center;">Reframe Perspective</button>
+                <div id="brainDumpResult" style="margin-top:16px; display:none; padding:16px; background:rgba(31, 63, 88, 0.05); border-left:3px solid var(--indigo); border-radius:0 6px 6px 0; font-size:13.5px;"></div>
+            `;
+            modalOverlay.style.display = 'flex';
+
+            document.getElementById('brainDumpBtn').addEventListener('click', async () => {
+                const text = document.getElementById('brainDumpText').value;
+                if (!text.trim()) return;
+
+                document.getElementById('brainDumpBtn').innerText = "Analyzing...";
+                document.getElementById('brainDumpBtn').disabled = true;
+
+                try {
+                    const res = await fetch('/api/reframe-anxiety', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ anxietyText: text })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error);
+
+                    const resDiv = document.getElementById('brainDumpResult');
+                    resDiv.innerHTML = `<strong>Reframed Perspective:</strong><br><br>${data.reframed}`;
+                    resDiv.style.display = 'block';
+                } catch(err) {
+                    showToast('Failed to reframe. ' + err.message);
+                } finally {
+                    document.getElementById('brainDumpBtn').innerText = "Reframe Perspective";
+                    document.getElementById('brainDumpBtn').disabled = false;
+                }
+            });
+        };
+
+        window.openMoodTracker = function() {
+            let logs = JSON.parse(localStorage.getItem('moodLogs') || '[]');
+            let logsHtml = logs.slice(0, 5).map(l => `<div style="font-size:13px; padding:8px 0; border-bottom:1px solid var(--line);"><strong>${l.date}</strong>: ${l.mood} - ${l.note}</div>`).join('');
+            
+            modalContent.innerHTML = `
+                <h3 style="margin-top:0;">Daily Mood Check-in</h3>
+                <div style="display:flex; justify-content:space-between; font-size:32px; cursor:pointer; margin:20px 0;" id="moodEmojis">
+                    <span data-mood="Terrible">😫</span>
+                    <span data-mood="Bad">🙁</span>
+                    <span data-mood="Neutral">😐</span>
+                    <span data-mood="Good">🙂</span>
+                    <span data-mood="Great">😁</span>
+                </div>
+                <input type="text" id="moodNote" placeholder="Brief note (optional)" style="width:100%; padding:12px; border-radius:4px; border:1px solid var(--line); margin-bottom:16px; background:var(--paper-2); color:var(--ink); font-family:inherit;">
+                <button class="primary-btn" id="saveMoodBtn" style="width:100%; justify-content:center;">Save Log</button>
+                
+                <h4 style="margin-top:24px; margin-bottom:8px;">Recent Logs</h4>
+                <div>${logsHtml || '<div style="font-size:13px; color:var(--ink-soft);">No logs yet.</div>'}</div>
+            `;
+            modalOverlay.style.display = 'flex';
+
+            let selectedMood = "Neutral";
+            document.querySelectorAll('#moodEmojis span').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    document.querySelectorAll('#moodEmojis span').forEach(s => s.style.transform = 'scale(1)');
+                    e.target.style.transform = 'scale(1.3)';
+                    selectedMood = e.target.getAttribute('data-mood');
+                });
+            });
+
+            document.getElementById('saveMoodBtn').addEventListener('click', () => {
+                const note = document.getElementById('moodNote').value || "-";
+                const log = { date: new Date().toLocaleDateString(), mood: selectedMood, note };
+                logs.unshift(log);
+                localStorage.setItem('moodLogs', JSON.stringify(logs));
+                showToast('Mood logged successfully!');
+                closeToolModal();
+            });
+        };
+
+
         // --- Physical Tabs & BMI ---
         window.selectPhysique = function(value, element) {
             document.querySelectorAll('.physique-card').forEach(c => c.classList.remove('selected'));
@@ -1768,7 +2350,12 @@
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
             
             document.querySelector(`[onclick="switchPhysicalTab('${tabId}')"]`).classList.add('active');
+            
             document.getElementById(tabId).classList.add('active');
+            if (tabId === 'tab-tracker' && typeof window.renderChart === 'function') {
+                setTimeout(window.renderChart, 50);
+            }
+
         };
 
         document.getElementById('bmiForm').addEventListener('submit', (e) => {
@@ -1784,10 +2371,41 @@
                 else if (bmi >= 30) { cat = "Obese"; color = "var(--kaki)"; }
                 
                 const res = document.getElementById('bmiResult');
+                
+                const clampedBmi = Math.max(15, Math.min(bmi, 40));
+                const percent = ((clampedBmi - 15) / 25) * 100;
+                
                 res.innerHTML = `
-                    <div style="font-size: 13px; color: var(--ink-soft);">Your BMI</div>
-                    <strong style="font-size: 32px; color: ${color};">${bmi}</strong>
-                    <div style="font-size: 14px; font-weight: 600; margin-top: 4px;">${cat}</div>
+                    <div style="display:flex; justify-content: space-between; align-items:flex-end;">
+                        <div>
+                            <div style="font-size: 13px; color: var(--ink-soft);">Your BMI</div>
+                            <strong style="font-size: 32px; color: ${color}; line-height: 1;">${bmi}</strong>
+                        </div>
+                        <div style="font-size: 16px; font-weight: 600; color: ${color};">${cat}</div>
+                    </div>
+                    
+                    <div style="margin-top: 36px; position: relative;">
+                        <!-- Pointer -->
+                        <div style="position: absolute; left: ${percent}%; bottom: 100%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; transition: left 1s cubic-bezier(0.4, 0, 0.2, 1); margin-bottom: 4px;">
+                            <div style="background: ${color}; color: #fff; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); white-space: nowrap;">You: ${bmi}</div>
+                            <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid ${color};"></div>
+                        </div>
+                        <!-- Bar -->
+                        <div style="width: 100%; height: 16px; border-radius: 8px; overflow: hidden; display: flex; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
+                            <div style="flex: 3.5; background: #60a5fa;" title="Underweight (< 18.5)"></div>
+                            <div style="flex: 6.5; background: #4ade80;" title="Normal (18.5 - 24.9)"></div>
+                            <div style="flex: 5; background: #facc15;" title="Overweight (25 - 29.9)"></div>
+                            <div style="flex: 10; background: #f87171;" title="Obese (30+)"></div>
+                        </div>
+                        <!-- Labels -->
+                        <div style="display:flex; justify-content: space-between; font-size: 11px; color: var(--ink-faint); margin-top: 8px; font-weight: 500;">
+                            <span style="flex: 3.5;">15</span>
+                            <span style="flex: 6.5; text-align: left;">18.5</span>
+                            <span style="flex: 5; text-align: left;">25</span>
+                            <span style="flex: 10; text-align: left;">30</span>
+                            <span style="text-align: right; width: 0; overflow: visible; direction: rtl;">40+</span>
+                        </div>
+                    </div>
                 `;
                 res.style.display = 'block';
                 
@@ -1914,6 +2532,112 @@
         let isGoodForm = true;
         let trackerCamera = null;
         let trackerPose = null;
+        
+        let timerStart = 0;
+        let currentDuration = 0;
+        let isHolding = false;
+        let weeklyData = JSON.parse(localStorage.getItem('henkaWeeklyData') || '[]');
+        
+        if (weeklyData.length === 0) {
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            weeklyData = days.map(d => ({ day: d, value: Math.floor(Math.random() * 20) + 5 }));
+            localStorage.setItem('henkaWeeklyData', JSON.stringify(weeklyData));
+        }
+
+        window.renderChart = function() {
+            if (typeof d3 === 'undefined') return;
+            d3.select('#d3Chart').selectAll('*').remove();
+            
+            const chartContainer = document.getElementById('d3Chart');
+            if (!chartContainer) return;
+            
+            const margin = {top: 10, right: 10, bottom: 20, left: 30};
+            
+            const clientWidth = chartContainer.clientWidth || 300;
+            const width = Math.max(clientWidth - margin.left - margin.right, 200);
+
+            const height = 200 - margin.top - margin.bottom;
+
+            const svg = d3.select('#d3Chart')
+              .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+              .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const x = d3.scalePoint()
+              .domain(weeklyData.map(d => d.day))
+              .range([0, width])
+              .padding(0.5);
+
+            const y = d3.scaleLinear()
+              .domain([0, d3.max(weeklyData, d => d.value) * 1.2 || 10])
+              .range([height, 0]);
+
+            svg.append('g')
+              .attr('transform', `translate(0,${height})`)
+              .call(d3.axisBottom(x).tickSize(0).tickPadding(8))
+              .call(g => g.select('.domain').attr('stroke', 'var(--line)'))
+              .selectAll('text').attr('fill', 'var(--ink-faint)');
+
+            svg.append('g')
+              .call(d3.axisLeft(y).ticks(4).tickSize(-width))
+              .call(g => g.select('.domain').remove())
+              .call(g => g.selectAll('.tick line').attr('stroke', 'var(--line)').attr('stroke-dasharray', '2,2'))
+              .selectAll('text').attr('fill', 'var(--ink-faint)');
+
+            const line = d3.line()
+              .x(d => x(d.day))
+              .y(d => y(d.value))
+              .curve(d3.curveMonotoneX);
+
+            svg.append('path')
+              .datum(weeklyData)
+              .attr('fill', 'none')
+              .attr('stroke', 'var(--indigo)')
+              .attr('stroke-width', 3)
+              .attr('d', line);
+
+            svg.selectAll('.dot')
+              .data(weeklyData)
+              .enter().append('circle')
+              .attr('cx', d => x(d.day))
+              .attr('cy', d => y(d.value))
+              .attr('r', 4)
+              .attr('fill', 'var(--indigo)')
+              .attr('stroke', 'var(--paper)')
+              .attr('stroke-width', 2);
+              
+            // Progress Insights logic
+            const total = weeklyData.reduce((sum, d) => sum + d.value, 0);
+            const insightsEl = document.getElementById('progressInsights');
+            if(insightsEl) {
+                if(total === 0) {
+                    insightsEl.innerHTML = "You haven't tracked any exercises this week. Time to start!";
+                } else if(total < 50) {
+                    insightsEl.innerHTML = `<strong>Total this week: ${total}</strong>. Great start! Consistency is the key to building the habit. Keep going!`;
+                } else {
+                    insightsEl.innerHTML = `<strong>Total this week: ${total}</strong>. You are crushing it! Excellent consistency across the board. Your body is adapting and getting stronger.`;
+                }
+            }
+        }
+
+        setTimeout(window.renderChart, 500);
+        window.addEventListener('resize', window.renderChart);
+        
+        window.updateWeeklyData = function(newValue) {
+            const today = new Date().toLocaleDateString('en-US', {weekday: 'short'});
+            let found = weeklyData.find(d => d.day === today);
+            if (found) {
+                found.value += newValue;
+            } else {
+                weeklyData.push({ day: today, value: newValue });
+                if (weeklyData.length > 7) weeklyData.shift();
+            }
+            localStorage.setItem('henkaWeeklyData', JSON.stringify(weeklyData));
+            window.renderChart();
+        }
+
 
         const videoElement = document.getElementById('videoElement');
         const canvasElement = document.getElementById('outputCanvas');
@@ -1941,99 +2665,125 @@
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
             canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-            
-            if (results.poseLandmarks) {
-                let landmarks = results.poseLandmarks;
-                isGoodForm = true;
-                let formMsg = "Good Form";
-                
-                if (currentExercise === 'squats') {
-                    const hip = landmarks[23]; // left hip
-                    const knee = landmarks[25]; // left knee
-                    const ankle = landmarks[27]; // left ankle
-                    
-                    if (hip.visibility > 0.5 && knee.visibility > 0.5 && ankle.visibility > 0.5) {
-                        const angle = calculateAngle(hip, knee, ankle);
-                        
-                        if (angle > 160) {
-                            exerciseStage = "up";
-                        }
-                        if (angle < 90 && exerciseStage === "up") {
-                            exerciseStage = "down";
-                            repCount++;
-                            repCountEl.innerText = repCount;
-                        }
-                        
-                        if (knee.x < ankle.x - 0.05) { 
-                            isGoodForm = false;
-                            formMsg = "Keep knees behind toes!";
-                        }
-                    } else {
-                        isGoodForm = false;
-                        formMsg = "Make sure your full body is visible";
-                    }
-                } 
-                else if (currentExercise === 'pushups') {
-                     const shoulder = landmarks[11];
-                     const elbow = landmarks[13];
-                     const wrist = landmarks[15];
-                     
-                     if (shoulder.visibility > 0.5 && elbow.visibility > 0.5 && wrist.visibility > 0.5) {
-                         const angle = calculateAngle(shoulder, elbow, wrist);
-                         if (angle > 160) {
-                             exerciseStage = "up";
-                         }
-                         if (angle < 90 && exerciseStage === "up") {
-                             exerciseStage = "down";
-                             repCount++;
-                             repCountEl.innerText = repCount;
-                         }
-                     } else {
-                         isGoodForm = false;
-                         formMsg = "Make sure upper body is visible";
-                     }
-                }
-                else if (currentExercise === 'bicep_curls') {
-                     const shoulder = landmarks[12]; // right shoulder
-                     const elbow = landmarks[14]; // right elbow
-                     const wrist = landmarks[16]; // right wrist
-                     
-                     if (shoulder.visibility > 0.5 && elbow.visibility > 0.5 && wrist.visibility > 0.5) {
-                         const angle = calculateAngle(shoulder, elbow, wrist);
-                         if (angle > 160) {
-                             exerciseStage = "down";
-                         }
-                         if (angle < 45 && exerciseStage === "down") {
-                             exerciseStage = "up";
-                             repCount++;
-                             repCountEl.innerText = repCount;
-                         }
-                     } else {
-                         isGoodForm = false;
-                         formMsg = "Make sure your arm is visible";
-                     }
-                }
 
-                feedbackEl.style.display = 'block';
-                feedbackEl.innerText = formMsg;
-                
-                if (isGoodForm) {
-                    feedbackEl.style.background = 'rgba(87, 100, 74, 0.9)'; // moss (green)
-                    if (window.drawConnectors && window.POSE_CONNECTIONS) {
-                        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#57644A', lineWidth: 4});
-                        drawLandmarks(canvasCtx, results.poseLandmarks, {color: '#00FF00', lineWidth: 2, radius: 4});
+            const ex = document.getElementById('exerciseSelect').value;
+            const repLabel = document.querySelector('#repCountDisplay').previousElementSibling;
+
+            if (ex === 'planks') {
+                repLabel.innerText = 'SECONDS';
+                if (results.poseLandmarks) {
+                    window.drawConnectors(canvasCtx, results.poseLandmarks, window.POSE_CONNECTIONS, {color: '#A15A2E', lineWidth: 4});
+                    window.drawLandmarks(canvasCtx, results.poseLandmarks, {color: '#FF0000', lineWidth: 2});
+                    
+                    const leftShoulder = results.poseLandmarks[11];
+                    const leftHip = results.poseLandmarks[23];
+                    const leftAnkle = results.poseLandmarks[27];
+
+                    if (leftShoulder && leftHip && leftAnkle && leftShoulder.visibility > 0.5) {
+                        const yDiffShoulderHip = Math.abs(leftShoulder.y - leftHip.y);
+                        const yDiffHipAnkle = Math.abs(leftHip.y - leftAnkle.y);
+
+                        // If body is relatively flat
+                        if (yDiffShoulderHip < 0.2 && yDiffHipAnkle < 0.2) {
+                            if (!isHolding) {
+                                isHolding = true;
+                                timerStart = Date.now() - (currentDuration * 1000);
+                                feedbackEl.innerText = 'Hold it...';
+                                feedbackEl.style.background = 'rgba(74, 111, 100, 0.9)';
+                            } else {
+                                currentDuration = Math.floor((Date.now() - timerStart) / 1000);
+                                repCountDisplay.innerText = currentDuration;
+                            }
+                        } else {
+                            if (isHolding) {
+                                isHolding = false;
+                                feedbackEl.innerText = 'Form broken. Resume plank.'; playFormWarningSound();
+                                feedbackEl.style.background = 'rgba(161, 90, 46, 0.9)';
+                            }
+                        }
                     }
                 } else {
-                    feedbackEl.style.background = 'rgba(161, 90, 46, 0.9)'; // kaki (red/orange)
-                    if (window.drawConnectors && window.POSE_CONNECTIONS) {
-                        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#A15A2E', lineWidth: 4});
-                        drawLandmarks(canvasCtx, results.poseLandmarks, {color: '#FF0000', lineWidth: 2, radius: 4});
-                    }
+                    isHolding = false;
+                    feedbackEl.innerText = 'Align your body horizontally to start.';
                 }
             } else {
-                feedbackEl.style.display = 'block';
-                feedbackEl.innerText = 'Searching for body...';
-                feedbackEl.style.background = 'rgba(31, 63, 88, 0.9)';
+                repLabel.innerText = 'REPS';
+                repCountDisplay.innerText = repCount;
+                if (results.poseLandmarks) {
+                    window.drawConnectors(canvasCtx, results.poseLandmarks, window.POSE_CONNECTIONS, {color: '#A15A2E', lineWidth: 4});
+                    window.drawLandmarks(canvasCtx, results.poseLandmarks, {color: '#FF0000', lineWidth: 2});
+
+                    if (ex === 'squats') {
+                        const hip = results.poseLandmarks[23];
+                        const knee = results.poseLandmarks[25];
+                        const ankle = results.poseLandmarks[27];
+                        if (hip && knee && ankle && hip.visibility > 0.5) {
+                            const angle = calculateAngle(hip, knee, ankle);
+                            if (angle > 160) {
+                                if (exerciseStage === 'down') {
+                                    repCount++;
+                                    repCountDisplay.innerText = repCount;
+                                    feedbackEl.innerText = 'Good Rep!';
+                                    feedbackEl.style.background = 'rgba(74, 111, 100, 0.9)';
+                                }
+                                exerciseStage = 'up';
+                            }
+                            if (angle < 100) {
+                                exerciseStage = 'down';
+                                feedbackEl.innerText = 'Go up!'; playFormWarningSound();
+                                feedbackEl.style.background = 'rgba(31, 63, 88, 0.9)';
+                            }
+                            if (exerciseStage === 'up' && angle < 160 && angle > 100) {
+                                feedbackEl.innerText = 'Go lower...'; playFormWarningSound();
+                                feedbackEl.style.background = 'rgba(161, 90, 46, 0.9)';
+                            }
+                        }
+                    } else if (ex === 'pushups') {
+                        const shoulder = results.poseLandmarks[11];
+                        const elbow = results.poseLandmarks[13];
+                        const wrist = results.poseLandmarks[15];
+                        if (shoulder && elbow && wrist && shoulder.visibility > 0.5) {
+                            const angle = calculateAngle(shoulder, elbow, wrist);
+                            if (angle > 160) {
+                                if (exerciseStage === 'down') {
+                                    repCount++;
+                                    repCountDisplay.innerText = repCount;
+                                    feedbackEl.innerText = 'Good Rep!';
+                                    feedbackEl.style.background = 'rgba(74, 111, 100, 0.9)';
+                                }
+                                exerciseStage = 'up';
+                            }
+                            if (angle < 90) {
+                                exerciseStage = 'down';
+                                feedbackEl.innerText = 'Push up!'; playFormWarningSound();
+                                feedbackEl.style.background = 'rgba(31, 63, 88, 0.9)';
+                            }
+                        }
+                    } else if (ex === 'bicep_curls') {
+                        const shoulder = results.poseLandmarks[12];
+                        const elbow = results.poseLandmarks[14];
+                        const wrist = results.poseLandmarks[16];
+                        if (shoulder && elbow && wrist && shoulder.visibility > 0.5) {
+                            const angle = calculateAngle(shoulder, elbow, wrist);
+                            if (angle > 160) {
+                                if (exerciseStage === 'up') {
+                                    repCount++;
+                                    repCountDisplay.innerText = repCount;
+                                    feedbackEl.innerText = 'Good Rep!';
+                                    feedbackEl.style.background = 'rgba(74, 111, 100, 0.9)';
+                                }
+                                exerciseStage = 'down';
+                            }
+                            if (angle < 45) {
+                                exerciseStage = 'up';
+                                feedbackEl.innerText = 'Squeeze & lower...'; playFormWarningSound();
+                                feedbackEl.style.background = 'rgba(31, 63, 88, 0.9)';
+                            }
+                        }
+                    }
+                } else {
+                    feedbackEl.innerText = 'Align your body to start.';
+                }
             }
             canvasCtx.restore();
         }
@@ -2055,7 +2805,7 @@
             startBtn.style.display = 'none';
             stopBtn.style.display = 'flex';
             feedbackEl.style.display = 'block';
-            feedbackEl.innerText = 'Downloading AI Model (Faster Lite Version)... Please wait.';
+            feedbackEl.innerHTML = '<span style="display:inline-block; animation: spin 1s linear infinite;">⏳</span> Downloading AI Model... Please wait.';
             feedbackEl.style.background = 'rgba(31, 63, 88, 0.9)';
 
             if (!trackerPose) {
@@ -2095,12 +2845,348 @@
                 trackerCamera.stop();
             }
             
+            const ex = document.getElementById('exerciseSelect').value;
+            let val = ex === 'planks' ? currentDuration : repCount;
+            if (val > 0) {
+                updateWeeklyData(val);
+                repCount = 0;
+                currentDuration = 0;
+                isHolding = false;
+                timerStart = 0;
+                repCountDisplay.innerText = 0;
+            }
+            
             container.style.display = 'none';
             startBtn.style.display = 'flex';
             stopBtn.style.display = 'none';
         });
 
+        
+        // Auth Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const authOverlay = document.getElementById('authOverlay');
+            const authForm = document.getElementById('authForm');
+            const greeting = document.getElementById('headerGreeting');
+            
+            const savedUser = localStorage.getItem('henkaUser');
+            if (savedUser) {
+                if (authOverlay) authOverlay.style.display = 'none';
+                try {
+                    const user = JSON.parse(savedUser);
+                    if(greeting) greeting.innerText = `Welcome back, ${user.name}`;
+                } catch(e){}
+            }
+            
+            if(authForm) {
+                authForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('authName').value;
+                    const email = document.getElementById('authEmail').value;
+                    if(name && email) {
+                        localStorage.setItem('henkaUser', JSON.stringify({name, email}));
+                        authOverlay.style.opacity = '0';
+                        authOverlay.style.transition = 'opacity 0.4s ease';
+                        setTimeout(() => authOverlay.style.display = 'none', 400);
+                        if(greeting) greeting.innerText = `Welcome, ${name}`;
+                        showToast('Successfully logged in');
+                    }
+                });
+            }
+        });
+
+        
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let lastWarningTime = 0;
+        function playFormWarningSound() {
+            if (!audioCtx) return;
+            if (Date.now() - lastWarningTime < 2000) return; // debounce 2s
+            lastWarningTime = Date.now();
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.type = 'triangle';
+            oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); 
+            oscillator.frequency.exponentialRampToValueAtTime(220, audioCtx.currentTime + 0.3); 
+            
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.3);
+        }
+
+        
+        window.renderSleepChart = function() {
+            if (typeof d3 === 'undefined') return;
+            const container = document.getElementById('sleepChart');
+            if (!container) return;
+            
+            d3.select('#sleepChart').selectAll('*').remove();
+            
+            const sleepData = [
+                { day: 'Mon', score: 65 },
+                { day: 'Tue', score: 72 },
+                { day: 'Wed', score: 58 },
+                { day: 'Thu', score: 85 },
+                { day: 'Fri', score: 90 },
+                { day: 'Sat', score: 78 },
+                { day: 'Sun', score: 88 }
+            ];
+            
+            const margin = {top: 10, right: 10, bottom: 20, left: 30};
+            
+            const clientWidth = container.clientWidth || 300; // Fallback width
+            const width = Math.max(clientWidth - margin.left - margin.right, 200); // Minimum width
+
+            const height = 160 - margin.top - margin.bottom;
+
+            const svg = d3.select('#sleepChart')
+              .append('svg')
+                .attr('width', width + margin.left + margin.right)
+                .attr('height', height + margin.top + margin.bottom)
+              .append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const x = d3.scalePoint()
+              .domain(sleepData.map(d => d.day))
+              .range([0, width])
+              .padding(0.5);
+
+            const y = d3.scaleLinear()
+              .domain([0, 100])
+              .range([height, 0]);
+
+            svg.append('g')
+              .attr('transform', `translate(0,${height})`)
+              .call(d3.axisBottom(x).tickSize(0).tickPadding(8))
+              .call(g => g.select('.domain').attr('stroke', 'var(--line)'))
+              .selectAll('text').attr('fill', 'var(--ink-faint)');
+
+            svg.append('g')
+              .call(d3.axisLeft(y).ticks(3).tickSize(-width))
+              .call(g => g.select('.domain').remove())
+              .call(g => g.selectAll('.tick line').attr('stroke', 'var(--line)').attr('stroke-dasharray', '2,2'))
+              .selectAll('text').attr('fill', 'var(--ink-faint)');
+
+            const line = d3.line()
+              .x(d => x(d.day))
+              .y(d => y(d.score))
+              .curve(d3.curveBasis);
+
+            svg.append('path')
+              .datum(sleepData)
+              .attr('fill', 'none')
+              .attr('stroke', 'var(--moss)')
+              .attr('stroke-width', 3)
+              .attr('d', line);
+              
+            // Area fill
+            const area = d3.area()
+              .x(d => x(d.day))
+              .y0(height)
+              .y1(d => y(d.score))
+              .curve(d3.curveBasis);
+              
+            svg.append('path')
+              .datum(sleepData)
+              .attr('fill', 'var(--moss)')
+              .attr('opacity', 0.1)
+              .attr('d', area);
+        }
+        setTimeout(window.renderSleepChart, 600);
+        window.addEventListener('resize', window.renderSleepChart);
+
+        
+        // Walk Tracker Logic
+        let walkWatchId = null;
+        let walkPositions = [];
+        let walkStartTime = null;
+        let walkTimerInterval = null;
+        let totalDistanceKm = 0;
+        let googleMap = null;
+        let mapPath = null;
+        let mapMarker = null;
+        
+        async function initGoogleMaps() {
+            try {
+                const res = await fetch('/api/config');
+                const config = await res.json();
+                const mapPlaceholder = document.getElementById('mapPlaceholder');
+                
+                if (!config.mapsApiKey) {
+                    if (mapPlaceholder) mapPlaceholder.innerText = 'Google Maps API Key missing in Secrets. Tracking GPS locally only.';
+                    return false;
+                }
+                
+                // Load script
+                if (!window.google) {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = `https://maps.googleapis.com/maps/api/js?key=${config.mapsApiKey}&libraries=geometry`;
+                        script.async = true;
+                        script.defer = true;
+                        script.onload = resolve;
+                        script.onerror = reject;
+                        document.head.appendChild(script);
+                    });
+                }
+                
+                if (mapPlaceholder) mapPlaceholder.style.display = 'none';
+                
+                googleMap = new google.maps.Map(document.getElementById('mapContainer'), {
+                    center: { lat: 0, lng: 0 },
+                    zoom: 15,
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: false
+                });
+                
+                mapPath = new google.maps.Polyline({
+                    path: [],
+                    geodesic: true,
+                    strokeColor: '#4F46E5',
+                    strokeOpacity: 1.0,
+                    strokeWeight: 4,
+                    map: googleMap
+                });
+                
+                mapMarker = new google.maps.Marker({
+                    map: googleMap,
+                    title: 'Current Location'
+                });
+                
+                return true;
+            } catch (err) {
+                console.error("Map load error:", err);
+                return false;
+            }
+        }
+        
+        // Haversine formula
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+          const R = 6371; 
+          const dLat = (lat2-lat1) * (Math.PI/180);
+          const dLon = (lon2-lon1) * (Math.PI/180); 
+          const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * 
+            Math.sin(dLon/2) * Math.sin(dLon/2); 
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+          return R * c; 
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const startBtn = document.getElementById('startWalkBtn');
+            const stopBtn = document.getElementById('stopWalkBtn');
+            
+            if (startBtn) {
+                startBtn.addEventListener('click', async () => {
+                    if (!navigator.geolocation) {
+                        showToast('Geolocation is not supported by your browser');
+                        return;
+                    }
+                    
+                    await initGoogleMaps();
+                    
+                    startBtn.style.display = 'none';
+                    stopBtn.style.display = 'flex';
+                    
+                    walkPositions = [];
+                    totalDistanceKm = 0;
+                    walkStartTime = Date.now();
+                    
+                    if (mapPath) mapPath.setPath([]);
+                    
+                    // Start timer
+                    walkTimerInterval = setInterval(() => {
+                        const seconds = Math.floor((Date.now() - walkStartTime) / 1000);
+                        const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+                        const secs = (seconds % 60).toString().padStart(2, '0');
+                        document.getElementById('walkTime').innerText = `${mins}:${secs}`;
+                    }, 1000);
+                    
+                    walkWatchId = navigator.geolocation.watchPosition((pos) => {
+                        const { latitude, longitude } = pos.coords;
+                        const newPoint = { lat: latitude, lng: longitude };
+                        
+                        if (walkPositions.length > 0) {
+                            const last = walkPositions[walkPositions.length - 1];
+                            const dist = getDistanceFromLatLonInKm(last.lat, last.lng, latitude, longitude);
+                            totalDistanceKm += dist;
+                        }
+                        walkPositions.push(newPoint);
+                        
+                        // Update UI
+                        document.getElementById('walkDistance').innerText = totalDistanceKm.toFixed(2);
+                        document.getElementById('walkSteps').innerText = Math.floor(totalDistanceKm * 1312); // ~1312 steps per km
+                        document.getElementById('walkCals').innerText = Math.floor(totalDistanceKm * 60); // ~60 kcal per km
+                        
+                        // Update Map
+                        if (googleMap) {
+                            const latLng = new google.maps.LatLng(latitude, longitude);
+                            googleMap.setCenter(latLng);
+                            if (mapMarker) mapMarker.setPosition(latLng);
+                            if (mapPath) {
+                                const path = mapPath.getPath();
+                                path.push(latLng);
+                            }
+                        } else {
+                            document.getElementById('mapPlaceholder').innerText = `Tracking Active... Location: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+                        }
+                        
+                    }, (err) => {
+                        console.error("GPS Error", err);
+                    }, { enableHighAccuracy: true });
+                    
+                    showToast('Walk tracking started');
+                });
+            }
+            
+            if (stopBtn) {
+                stopBtn.addEventListener('click', () => {
+                    if (walkWatchId) navigator.geolocation.clearWatch(walkWatchId);
+                    clearInterval(walkTimerInterval);
+                    
+                    startBtn.style.display = 'flex';
+                    stopBtn.style.display = 'none';
+                    
+                    showToast(`Workout finished! Distance: ${totalDistanceKm.toFixed(2)} km`);
+                });
+            }
+        });
+
         // --- Init ---
+        
+        const downloadBtn = document.getElementById('downloadReportBtn');
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', () => {
+                let data = JSON.parse(localStorage.getItem('henkaWeeklyData') || '[]');
+                if (data.length === 0) {
+                    showToast('No progress data to download yet.');
+                    return;
+                }
+                let reportText = "=== Henka Weekly Progress Report ===\n\n";
+                data.forEach(d => {
+                    reportText += `${d.day}: ${d.value} Reps/Secs\n`;
+                });
+                reportText += "\nKeep up the great work!";
+                
+                const blob = new Blob([reportText], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Henka_Progress_Report.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             fetchMentors();
             fetchTimetable();
